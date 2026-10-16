@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import request from "supertest";
@@ -184,4 +184,36 @@ test("a body over the size limit is a 413 TOO_LARGE with a readable message", as
 test("notes up to 200 KB are accepted", async () => {
   const res = await request(app).patch("/api/brokers/alpha").send({ notes: "a".repeat(200_000) });
   expect(res.status).toBe(200);
+});
+
+describe("serving the built app (npm start)", () => {
+  let staticApp: ReturnType<typeof createApp>;
+  beforeEach(async () => {
+    const dist = join(dir, "dist");
+    await mkdir(join(dist, "assets"), { recursive: true });
+    await writeFile(join(dist, "index.html"), "<title>Unlist</title>");
+    await writeFile(join(dist, "assets", "app.js"), "console.log(1)");
+    staticApp = createApp({ dataDir: join(dir, "data"), brokersPath, today: () => T, staticDir: dist });
+  });
+
+  test("serves index.html and assets", async () => {
+    expect((await request(staticApp).get("/")).text).toContain("<title>Unlist</title>");
+    expect((await request(staticApp).get("/assets/app.js")).text).toBe("console.log(1)");
+  });
+
+  test("deep links fall back to index.html", async () => {
+    const res = await request(staticApp).get("/broker/alpha");
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("<title>Unlist</title>");
+  });
+
+  test("unknown API routes stay JSON 404s", async () => {
+    const res = await request(staticApp).get("/api/nope");
+    expect(res.status).toBe(404);
+    expect(res.body.code).toBe("NOT_FOUND");
+  });
+
+  test("the static site is also refused to foreign hosts", async () => {
+    expect((await request(staticApp).get("/").set("Host", "evil.example")).status).toBe(403);
+  });
 });

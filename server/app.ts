@@ -1,3 +1,4 @@
+import { join, resolve } from "node:path";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { ZodError } from "zod";
 import { mergeBrokers } from "../shared/merge";
@@ -22,7 +23,7 @@ const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost"]);
 type Handler = (req: Request, res: Response) => Promise<void>;
 const route = (fn: Handler) => (req: Request, res: Response, next: NextFunction) => fn(req, res).catch(next);
 
-export function createApp(opts: { dataDir: string; brokersPath: string; today?: () => string }) {
+export function createApp(opts: { dataDir: string; brokersPath: string; today?: () => string; staticDir?: string }) {
   const today = opts.today ?? (() => todayISO());
   const store = createStore(opts.dataDir);
   const brokers = loadBrokers(opts.brokersPath);
@@ -101,6 +102,17 @@ export function createApp(opts: { dataDir: string; brokersPath: string; today?: 
       res.json({ ok: true });
     }),
   );
+
+  app.use("/api", (_req, res) => {
+    res.status(404).json({ code: "NOT_FOUND", message: "Unknown API route" });
+  });
+
+  // npm start: serve the built web app, with deep links falling back to it.
+  if (opts.staticDir) {
+    const staticDir = resolve(opts.staticDir);
+    app.use(express.static(staticDir));
+    app.get(/.*/, (_req, res) => res.sendFile(join(staticDir, "index.html")));
+  }
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     const bodyError = (err as { type?: string })?.type;

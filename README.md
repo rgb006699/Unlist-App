@@ -7,10 +7,14 @@ sites, sending removal requests, and getting reminded to recheck.
 
 ```bash
 npm install
-npm run dev
+npm start
 ```
 
-Then open http://localhost:5173.
+Then open http://localhost:3001. `npm start` builds the app and serves it from
+the local Unlist server (only reachable from this computer).
+
+For working on the code, `npm run dev` runs the Vite dev server with live
+reload at http://localhost:5173.
 
 ## Where your data lives
 
@@ -24,7 +28,7 @@ version before your last change) and keeps the unreadable file as
 `data.json.corrupt-<time>`.
 
 The broker list is `brokers.json`. Opt-out pages change often, so check each
-one before relying on it. Restart `npm run dev` after editing it.
+one before relying on it. Restart Unlist after editing it.
 
 Unlist never sends email for you: it copies a request or opens a draft in your
 mail app, and you press Send.

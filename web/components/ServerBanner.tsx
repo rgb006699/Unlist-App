@@ -5,7 +5,7 @@ export function ServerBanner({ error, onRestore }: { error: ApiError | null; onR
   if (error.code === "UNREACHABLE") {
     return (
       <div className="banner" role="alert">
-        Can't reach Unlist server — is <code>npm run dev</code> running?
+        Can&apos;t reach Unlist server — is <code>npm start</code> running?
       </div>
     );
   }
