@@ -35,6 +35,27 @@ script, so it can be changed and regenerated:
 swift ios/Scripts/make-icon.swift
 ```
 
+## Faster search: links, groups and Fill
+
+Optional fields in the root `brokers.json` (the web app ignores them):
+
+- `searchTemplate` — a results URL with placeholders filled from the
+  profile, so **Find me** opens the owner's results directly. Placeholders:
+  `{first}`, `{last}`, `{middle}`, `{city}`, `{state}`, `{stateName}`, `{zip}`.
+  Add `:slug` for `jane-doe` style or `:Slug` for `Jane-Doe` style; without a
+  modifier the value is URL-encoded. Only add a template after checking it on
+  the live site; invalid ones are dropped at load.
+- `group` — brokers sharing one opt-out (e.g. `peopleconnect`). The broker
+  page says so and offers to update every site in the group.
+- `autofill` — CSS selectors for fields the generic Fill misses, keyed by
+  `fullName`, `firstName`, `lastName`, `email`, `phone`, `street`, `city`,
+  `state`, `zip`.
+
+Broker pages open in a private in-app browser. **Fill my details** runs
+`Unlist/Resources/autofill.js`: it fills empty, visible fields it recognises,
+skips the site's own search box and ambiguous fields, and never submits or
+touches a CAPTCHA.
+
 ## How data is stored
 
 Everything lives in the app's private storage on the phone
