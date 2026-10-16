@@ -8,6 +8,8 @@ struct BrokerDetailView: View {
     @State private var notes = ""
     @State private var listingUrl = ""
     @State private var remindersOff = false
+    @State private var browser: BrowserTarget?
+    @State private var pendingStatus: Status?
     @FocusState private var focus: Field?
 
     private enum Field { case url, notes }
@@ -26,7 +28,11 @@ struct BrokerDetailView: View {
         let record = row.record
 
         return List {
-            Section { HeaderView(row: row) }
+            Section {
+                HeaderView(row: row, group: model.groupMembers(of: brokerId), search: searchLink(for: broker, profile: model.profile)) { url in
+                    browser = BrowserTarget(brokerId: brokerId, url: url)
+                }
+            }
 
             Section {
                 Picker("Status", selection: statusBinding(record)) {
@@ -134,6 +140,20 @@ struct BrokerDetailView: View {
         .task(id: record?.status) {
             remindersOff = record?.status == .removed ? await NotificationScheduler.isDenied() : false
         }
+        .sheet(item: $browser) { BrokerBrowserView(target: $0) }
+        .confirmationDialog("Apply to all \(model.groupMembers(of: brokerId).count) sites in this group?",
+                            isPresented: Binding(get: { pendingStatus != nil }, set: { if !$0 { pendingStatus = nil } }),
+                            titleVisibility: .visible) {
+            Button("Apply to all") {
+                if let s = pendingStatus { model.setStatus(brokerId, s, applyToGroup: true) }
+                pendingStatus = nil
+            }
+            Button("Just this one") {
+                if let s = pendingStatus { model.setStatus(brokerId, s) }
+                pendingStatus = nil
+            }
+            Button("Cancel", role: .cancel) { pendingStatus = nil }
+        }
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
@@ -150,7 +170,11 @@ struct BrokerDetailView: View {
     private func statusBinding(_ record: BrokerRecord?) -> Binding<Status?> {
         Binding(
             get: { record?.status },
-            set: { if let s = $0 { model.setStatus(brokerId, s) } }
+            set: { s in
+                guard let s else { return }
+                // A shared opt-out asks whether the change covers every site in it.
+                if model.groupMembers(of: brokerId).count > 1 { pendingStatus = s } else { model.setStatus(brokerId, s) }
+            }
         )
     }
 
@@ -174,6 +198,9 @@ struct BrokerDetailView: View {
 
 private struct HeaderView: View {
     let row: BrokerRow
+    let group: [Broker]
+    let search: SearchLink
+    let open: (URL) -> Void
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
@@ -202,25 +229,48 @@ private struct HeaderView: View {
                     .foregroundStyle(.secondary)
             }
 
+            if group.count > 1 {
+                Label("One opt-out covers \(group.count) sites: \(group.map(\.name).joined(separator: ", ")).",
+                      systemImage: "square.stack.3d.up")
+                    .labelStyle(CompactLabelStyle(spacing: 8))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
             let layout = typeSize.isAccessibilitySize
                 ? AnyLayout(VStackLayout(alignment: .leading, spacing: 8))
                 : AnyLayout(HStackLayout(spacing: 8))
             layout { links(broker) }
+
+            if case .fallback(_, let missing) = search, !missing.isEmpty {
+                Label("Add your \(missing.joined(separator: " and ")) in Profile to jump straight to your results.",
+                      systemImage: "info.circle")
+                    .labelStyle(CompactLabelStyle(spacing: 8))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(.vertical, 8)
     }
 
+    private var isDirect: Bool {
+        if case .direct = search { return true }
+        return false
+    }
+
     @ViewBuilder
     private func links(_ broker: Broker) -> some View {
-        if let url = URL(string: broker.searchUrl) {
-            Link(destination: url) {
-                Label("Search page", systemImage: "magnifyingglass").labelStyle(.compact)
-                    .frame(maxWidth: .infinity).lineLimit(1).minimumScaleFactor(0.85)
+        Button {
+            switch search {
+            case .direct(let url), .fallback(let url, _): open(url)
             }
-            .buttonStyle(.bordered)
+        } label: {
+            Label(isDirect ? "Find me" : "Search page", systemImage: "magnifyingglass").labelStyle(.compact)
+                .frame(maxWidth: .infinity).lineLimit(1).minimumScaleFactor(0.85)
         }
+        .buttonStyle(.bordered)
         if let url = URL(string: broker.optOutUrl) {
-            Link(destination: url) {
+            Button { open(url) } label: {
                 Label("Opt-out page", systemImage: "arrow.up.right").labelStyle(.compact)
                     .frame(maxWidth: .infinity).lineLimit(1).minimumScaleFactor(0.85)
             }

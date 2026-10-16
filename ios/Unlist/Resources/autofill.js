@@ -40,8 +40,14 @@ window.unlistFill = function (payload) {
       if (["hidden", "password", "checkbox", "radio", "file", "submit", "button", "image", "reset"].indexOf(t) >= 0) return false;
     }
     if (/captcha/i.test((el.name || "") + " " + (el.id || "") + " " + (el.className || ""))) return false;
+    // The site's own search box is not part of the opt-out form.
+    if ((el.getAttribute("type") || "").toLowerCase() === "search") return false;
+    if (el.closest && el.closest("[role=search]")) return false;
+    if (el.name === "q" || /\b(search|query|keyword)\b/.test(describe(el))) return false;
+    // Hidden fields, including those inside hidden sections, take up no space.
     var style = window.getComputedStyle(el);
     if (style.display === "none" || style.visibility === "hidden") return false;
+    if (el.getClientRects().length === 0) return false;
     return true;
   }
 
@@ -64,7 +70,8 @@ window.unlistFill = function (payload) {
   function describe(el) {
     var raw = [el.name, el.id, el.getAttribute("placeholder"), el.getAttribute("aria-label"), labelText(el)]
       .filter(Boolean).join(" ");
-    return raw.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_\-.\[\]]+/g, " ").toLowerCase();
+    return raw.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_\-.\[\]]+/g, " ").toLowerCase()
+      .replace(/\be ?mail address\b/g, "email");
   }
 
   function setValue(el, value) {
@@ -120,9 +127,11 @@ window.unlistFill = function (payload) {
     }
     if (!field) {
       var words = describe(el);
-      for (var i = 0; i < KEYWORDS.length; i++) {
-        if (KEYWORDS[i][1].test(words)) { field = KEYWORDS[i][0]; break; }
-      }
+      var matches = KEYWORDS.filter(function (k) { return k[0] !== "fullName" && k[1].test(words); });
+      // "Name, phone or address" could be anything: leave it for the owner.
+      if (matches.length > 1) return;
+      if (matches.length === 1) field = matches[0][0];
+      else if (KEYWORDS[KEYWORDS.length - 1][1].test(words)) field = "fullName";
     }
     if (!field || bySelector[field]) return;
     if (field === "fullName" && hasSplitName) return;

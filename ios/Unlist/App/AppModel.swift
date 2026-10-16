@@ -13,6 +13,8 @@ final class AppModel {
     private(set) var today: String
     /// The Profile form edits this copy; it is saved explicitly.
     var profileDraft: Profile = .empty
+    /// Set by screens that send the owner to the Profile tab.
+    var openProfile = false
     /// Set when a reminder is tapped; the UI opens that broker.
     var openBrokerId: String?
     /// The latest reminder sync, so tests (and callers) can wait for it.

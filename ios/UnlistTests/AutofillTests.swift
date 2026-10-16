@@ -159,6 +159,33 @@ private final class TestPage: NSObject, WKNavigationDelegate {
         #expect(try await page.number("window.changes") == 1)
     }
 
+    @Test func siteSearchBoxesAreLeftAlone() async throws {
+        let page = TestPage()
+        await page.load(#"""
+        <header><input id="hdr" placeholder="Enter name, phone or address"></header>
+        <form role="search"><input id="q" name="name"></form>
+        <input id="s" type="search" name="city">
+        <form><label for="em">Email</label><input id="em"></form>
+        """#)
+        #expect(try await page.fill() == 1)
+        #expect(try await page.value("#hdr") == "")
+        #expect(try await page.value("#q") == "")
+        #expect(try await page.value("#s") == "")
+        #expect(try await page.value("#em") == "jane@example.com")
+    }
+
+    @Test func fieldsInsideHiddenSectionsAreSkipped() async throws {
+        let page = TestPage()
+        await page.load(#"""
+        <div style="display:none"><input id="h1" name="email"><input id="h2" name="fname"></div>
+        <div hidden><input id="h3" name="zip"></div>
+        <input id="v" name="lname">
+        """#)
+        #expect(try await page.fill() == 1)
+        #expect(try await page.value("#h1") == "")
+        #expect(try await page.value("#v") == "Doe")
+    }
+
     @Test func perBrokerSelectorWins() async throws {
         let page = TestPage()
         await page.load(#"<input id="weird-id"><input name="email">"#)

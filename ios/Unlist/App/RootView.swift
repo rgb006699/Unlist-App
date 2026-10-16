@@ -44,6 +44,11 @@ struct RootView: View {
                 }
                 Button("Keep Editing", role: .cancel) { pendingTab = nil }
             }
+            .onChange(of: model.openProfile) { _, open in
+                guard open else { return }
+                tab = .profile
+                model.openProfile = false
+            }
             .onChange(of: model.openBrokerId, initial: true) { _, id in
                 guard let id else { return }
                 tab = .dashboard

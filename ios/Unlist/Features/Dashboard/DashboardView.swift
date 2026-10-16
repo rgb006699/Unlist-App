@@ -2,9 +2,9 @@ import SwiftUI
 
 struct DashboardView: View {
     @Environment(AppModel.self) private var model
-    @Environment(\.openURL) private var openURL
     @State private var group: TileGroup?
     @State private var query = ""
+    @State private var browser: BrowserTarget?
 
     var body: some View {
         let rows = model.rows
@@ -12,7 +12,10 @@ struct DashboardView: View {
         let due = rows.filter { $0.view == .due }
         let visible = filterRows(rows, group: group, query: query)
 
+        let searching = !query.trimmingCharacters(in: .whitespaces).isEmpty
+
         List {
+            if !searching {
             Section {
                 SummaryView(counts: counts, group: $group)
                     .listRowInsets(EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16))
@@ -30,7 +33,12 @@ struct DashboardView: View {
                 Section {
                     ForEach(due) { row in
                         DueRow(row: row, today: model.today,
-                               searchAgain: { if let url = URL(string: row.broker.searchUrl) { openURL(url) } },
+                               searchAgain: {
+                                   switch searchLink(for: row.broker, profile: model.profile) {
+                                   case .direct(let url), .fallback(let url, _):
+                                       browser = BrowserTarget(brokerId: row.id, url: url)
+                                   }
+                               },
                                stillRemoved: { model.markStillRemoved(row.id) },
                                relisted: { model.setStatus(row.id, .relisted) })
                     }
@@ -41,6 +49,7 @@ struct DashboardView: View {
                 } footer: {
                     Text("Search these sites again to make sure your listing hasn't come back.")
                 }
+            }
             }
 
             Section {
@@ -56,6 +65,7 @@ struct DashboardView: View {
         }
         .listStyle(.insetGrouped)
         .searchable(text: $query, prompt: "Find a broker")
+        .sheet(item: $browser) { BrokerBrowserView(target: $0) }
         .navigationTitle("Your removals")
     }
 }
