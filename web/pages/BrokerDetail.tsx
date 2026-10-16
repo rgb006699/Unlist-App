@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import type { BrokerRow } from "../../shared/merge";
 import type { HistoryEntry, Profile, RecordPatch, Status } from "../../shared/types";
 import { api } from "../api";
+import { LoadFailed } from "../components/LoadFailed";
 import { RequestPanel } from "../components/RequestPanel";
 import { useReportError } from "../errors";
 import { METHOD_LABEL, STATUS_LABEL } from "../labels";
@@ -18,6 +19,7 @@ export default function BrokerDetail() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [notes, setNotes] = useState("");
   const [listingUrl, setListingUrl] = useState("");
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     Promise.all([api.getBrokers(), api.getProfile()])
@@ -28,10 +30,13 @@ export default function BrokerDetail() {
         setListingUrl(found?.record?.listingUrl ?? "");
         setProfile(p);
       })
-      .catch(report);
+      .catch((e) => {
+        setFailed(true);
+        report(e);
+      });
   }, [id, report]);
 
-  if (row === undefined) return <p className="muted">Loading…</p>;
+  if (row === undefined) return failed ? <LoadFailed /> : <p className="muted">Loading…</p>;
   if (row === null) {
     return (
       <section className="card">

@@ -4,6 +4,7 @@ import type { BrokerRow } from "../../shared/merge";
 import { progress } from "../../shared/status";
 import type { Method, RecordPatch, ViewStatus } from "../../shared/types";
 import { api } from "../api";
+import { LoadFailed } from "../components/LoadFailed";
 import { useReportError } from "../errors";
 import { METHOD_LABEL, nextDateLabel, STATUS_LABEL } from "../labels";
 
@@ -20,12 +21,16 @@ export default function Dashboard() {
   const [status, setStatus] = useState<ViewStatus | "">("");
   const [method, setMethod] = useState<Method | "">("");
   const [query, setQuery] = useState("");
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     api
       .getBrokers()
       .then((r) => setRows(r.rows))
-      .catch(report);
+      .catch((e) => {
+        setFailed(true);
+        report(e);
+      });
   }, [report]);
 
   const counts = useMemo(() => progress((rows ?? []).map((r) => r.view)), [rows]);
@@ -49,7 +54,7 @@ export default function Dashboard() {
     }
   };
 
-  if (!rows) return <p className="muted">Loading…</p>;
+  if (!rows) return failed ? <LoadFailed /> : <p className="muted">Loading…</p>;
 
   const due = rows.filter((r) => r.view === "due");
 

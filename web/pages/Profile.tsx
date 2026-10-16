@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Address, Profile as ProfileT } from "../../shared/types";
 import { api, ApiError } from "../api";
+import { LoadFailed } from "../components/LoadFailed";
 import { useReportError } from "../errors";
 
 const newAddress = (): Address => ({ street: "", city: "", state: "TX", zip: "", current: false });
@@ -65,11 +66,19 @@ export default function Profile() {
     kind: "idle",
   });
 
+  const [failed, setFailed] = useState(false);
+
   useEffect(() => {
-    api.getProfile().then(setProfile).catch(report);
+    api
+      .getProfile()
+      .then(setProfile)
+      .catch((e) => {
+        setFailed(true);
+        report(e);
+      });
   }, [report]);
 
-  if (!profile) return <p className="muted">Loading…</p>;
+  if (!profile) return failed ? <LoadFailed /> : <p className="muted">Loading…</p>;
 
   const set = (patch: Partial<ProfileT>) => {
     setProfile({ ...profile, ...patch });
