@@ -1,5 +1,5 @@
-// Draws the Unlist app icon: a white shield with a green check mark on a deep
-// green gradient. 1024×1024, opaque (iOS rounds the corners itself).
+// Draws the Unlist app icon: a white shield with an orange check mark on an
+// orange gradient. 1024×1024, opaque (iOS rounds the corners itself).
 //
 // Usage: swift ios/Scripts/make-icon.swift <output.png>
 
@@ -29,7 +29,7 @@ ctx.translateBy(x: 0, y: CGFloat(size))
 ctx.scaleBy(x: 1, y: -1)
 
 // Background: vertical gradient, lighter at the top.
-let gradient = CGGradient(colorsSpace: space, colors: [rgb(0x1F8A61), rgb(0x0F4F37)] as CFArray, locations: [0, 1])!
+let gradient = CGGradient(colorsSpace: space, colors: [rgb(0xFB8A3C), rgb(0xC2410C)] as CFArray, locations: [0, 1])!
 ctx.drawLinearGradient(gradient, start: CGPoint(x: 0, y: 0), end: CGPoint(x: 0, y: CGFloat(size)), options: [])
 
 // Shield: pointed bottom, gently peaked top.
@@ -68,7 +68,7 @@ let check = CGMutablePath()
 check.move(to: CGPoint(x: cx - 0.19 * w, y: top + 0.50 * h))
 check.addLine(to: CGPoint(x: cx - 0.04 * w, y: top + 0.645 * h))
 check.addLine(to: CGPoint(x: cx + 0.21 * w, y: top + 0.36 * h))
-ctx.setStrokeColor(rgb(0x16684A))
+ctx.setStrokeColor(rgb(0xC2410C))
 ctx.setLineWidth(70)
 ctx.setLineCap(.round)
 ctx.setLineJoin(.round)

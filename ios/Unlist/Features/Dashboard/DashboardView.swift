@@ -108,7 +108,7 @@ private struct ProgressBar: View {
                 }
                 Spacer(minLength: 0)
             }
-            .background(Color(.systemGray5))
+            .background(Color(.systemGray4))
             .clipShape(Capsule())
         }
         .frame(height: 10)
@@ -139,7 +139,7 @@ private struct TileButton: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
-            .background(selected ? tile.color.opacity(0.12) : Color(.secondarySystemBackground),
+            .background(selected ? tile.color.opacity(0.12) : Color(.tertiarySystemFill),
                         in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
