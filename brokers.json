@@ -10,21 +10,244 @@
     "needsEmailConfirm": true,
     "needsId": false,
     "relistRisk": "high",
-    "steps": ["Search your name on Spokeo and open your listing", "Copy the listing URL", "Paste it into the opt-out form with your email", "Click the confirmation link Spokeo emails you"],
+    "steps": [
+      "Search your name on Spokeo and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
     "lastVerified": ""
   },
   {
-    "id": "acxiom",
-    "name": "Acxiom",
-    "searchUrl": "https://www.acxiom.com",
-    "optOutUrl": "https://isapps.acxiom.com/optout/optout.aspx",
-    "method": "email",
-    "optOutEmail": "consumeradvo@acxiom.com",
+    "id": "whitepages",
+    "name": "Whitepages",
+    "searchUrl": "https://www.whitepages.com",
+    "optOutUrl": "https://www.whitepages.com/suppression-requests",
+    "method": "web_form",
+    "optOutEmail": null,
     "needsCaptcha": false,
     "needsEmailConfirm": false,
     "needsId": false,
-    "relistRisk": "medium",
-    "steps": ["Send a deletion request to the opt-out email", "Wait for confirmation"],
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on Whitepages and copy your listing URL",
+      "Paste the URL into the suppression form",
+      "Enter your phone number and answer the automated verification call",
+      "Enter the code from the call to finish"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "beenverified",
+    "name": "BeenVerified",
+    "searchUrl": "https://www.beenverified.com",
+    "optOutUrl": "https://www.beenverified.com/svc/optout/search/",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on BeenVerified and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "peoplelooker",
+    "name": "PeopleLooker",
+    "searchUrl": "https://www.peoplelooker.com",
+    "optOutUrl": "https://www.peoplelooker.com/svc/optout/search/",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on PeopleLooker and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "intelius",
+    "name": "Intelius",
+    "searchUrl": "https://www.intelius.com",
+    "optOutUrl": "https://suppression.peopleconnect.us/login",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Go to the PeopleConnect suppression center and verify your email",
+      "Search for your record and select every listing that matches you",
+      "Confirm the suppression — one request covers Intelius, Instant Checkmate, TruthFinder, US Search and ZabaSearch"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "instantcheckmate",
+    "name": "Instant Checkmate",
+    "searchUrl": "https://www.instantcheckmate.com",
+    "optOutUrl": "https://suppression.peopleconnect.us/login",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Go to the PeopleConnect suppression center and verify your email",
+      "Search for your record and select every listing that matches you",
+      "Confirm the suppression — one request covers Intelius, Instant Checkmate, TruthFinder, US Search and ZabaSearch"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "truthfinder",
+    "name": "TruthFinder",
+    "searchUrl": "https://www.truthfinder.com",
+    "optOutUrl": "https://suppression.peopleconnect.us/login",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Go to the PeopleConnect suppression center and verify your email",
+      "Search for your record and select every listing that matches you",
+      "Confirm the suppression — one request covers Intelius, Instant Checkmate, TruthFinder, US Search and ZabaSearch"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "ussearch",
+    "name": "US Search",
+    "searchUrl": "https://www.ussearch.com",
+    "optOutUrl": "https://suppression.peopleconnect.us/login",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Go to the PeopleConnect suppression center and verify your email",
+      "Search for your record and select every listing that matches you",
+      "Confirm the suppression — one request covers Intelius, Instant Checkmate, TruthFinder, US Search and ZabaSearch"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "zabasearch",
+    "name": "ZabaSearch",
+    "searchUrl": "https://www.zabasearch.com",
+    "optOutUrl": "https://suppression.peopleconnect.us/login",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Go to the PeopleConnect suppression center and verify your email",
+      "Search for your record and select every listing that matches you",
+      "Confirm the suppression — one request covers Intelius, Instant Checkmate, TruthFinder, US Search and ZabaSearch"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "peoplefinders",
+    "name": "PeopleFinders",
+    "searchUrl": "https://www.peoplefinders.com",
+    "optOutUrl": "https://www.peoplefinders.com/opt-out",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on PeopleFinders and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "truepeoplesearch",
+    "name": "TruePeopleSearch",
+    "searchUrl": "https://www.truepeoplesearch.com",
+    "optOutUrl": "https://www.truepeoplesearch.com/removal",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on TruePeopleSearch and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "fastpeoplesearch",
+    "name": "FastPeopleSearch",
+    "searchUrl": "https://www.fastpeoplesearch.com",
+    "optOutUrl": "https://www.fastpeoplesearch.com/removal",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on FastPeopleSearch and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "radaris",
+    "name": "Radaris",
+    "searchUrl": "https://radaris.com",
+    "optOutUrl": "https://radaris.com/control/privacy",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on Radaris and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
     "lastVerified": ""
   },
   {
@@ -32,13 +255,498 @@
     "name": "MyLife",
     "searchUrl": "https://www.mylife.com",
     "optOutUrl": "https://www.mylife.com/ccpa/index.pubview",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on MyLife and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "nuwber",
+    "name": "Nuwber",
+    "searchUrl": "https://nuwber.com",
+    "optOutUrl": "https://nuwber.com/removal/link",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on Nuwber and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "thatsthem",
+    "name": "ThatsThem",
+    "searchUrl": "https://thatsthem.com",
+    "optOutUrl": "https://thatsthem.com/optout",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on ThatsThem and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "peoplesmart",
+    "name": "PeopleSmart",
+    "searchUrl": "https://www.peoplesmart.com",
+    "optOutUrl": "https://www.peoplesmart.com/svc/optout/search/",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on PeopleSmart and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "clustrmaps",
+    "name": "ClustrMaps",
+    "searchUrl": "https://clustrmaps.com",
+    "optOutUrl": "https://clustrmaps.com/bl/opt-out",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on ClustrMaps and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "searchpeoplefree",
+    "name": "SearchPeopleFree",
+    "searchUrl": "https://www.searchpeoplefree.com",
+    "optOutUrl": "https://www.searchpeoplefree.com/opt-out",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on SearchPeopleFree and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "usphonebook",
+    "name": "USPhoneBook",
+    "searchUrl": "https://www.usphonebook.com",
+    "optOutUrl": "https://www.usphonebook.com/removal",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on USPhoneBook and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "smartbackgroundchecks",
+    "name": "SmartBackgroundChecks",
+    "searchUrl": "https://www.smartbackgroundchecks.com",
+    "optOutUrl": "https://www.smartbackgroundchecks.com/remove",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on SmartBackgroundChecks and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "peoplesearchnow",
+    "name": "PeopleSearchNow",
+    "searchUrl": "https://www.peoplesearchnow.com",
+    "optOutUrl": "https://www.peoplesearchnow.com/opt-out",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on PeopleSearchNow and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "cyberbackgroundchecks",
+    "name": "CyberBackgroundChecks",
+    "searchUrl": "https://www.cyberbackgroundchecks.com",
+    "optOutUrl": "https://www.cyberbackgroundchecks.com/removal",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": [
+      "Search your name on CyberBackgroundChecks and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "familytreenow",
+    "name": "FamilyTreeNow",
+    "searchUrl": "https://www.familytreenow.com",
+    "optOutUrl": "https://www.familytreenow.com/optout",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on FamilyTreeNow and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "addresses",
+    "name": "Addresses.com",
+    "searchUrl": "https://www.addresses.com",
+    "optOutUrl": "https://www.addresses.com/optout.php",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on Addresses.com and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "checkpeople",
+    "name": "CheckPeople",
+    "searchUrl": "https://www.checkpeople.com",
+    "optOutUrl": "https://www.checkpeople.com/opt-out",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on CheckPeople and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "infotracer",
+    "name": "InfoTracer",
+    "searchUrl": "https://infotracer.com",
+    "optOutUrl": "https://infotracer.com/optout/",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on InfoTracer and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "veripages",
+    "name": "VeriPages",
+    "searchUrl": "https://veripages.com",
+    "optOutUrl": "https://veripages.com/page/optout",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on VeriPages and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "idtrue",
+    "name": "IDTrue",
+    "searchUrl": "https://www.idtrue.com",
+    "optOutUrl": "https://www.idtrue.com/optout/",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on IDTrue and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "neighborreport",
+    "name": "Neighbor.report",
+    "searchUrl": "https://neighbor.report",
+    "optOutUrl": "https://neighbor.report/remove",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on Neighbor.report and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "rehold",
+    "name": "Rehold",
+    "searchUrl": "https://rehold.com",
+    "optOutUrl": "https://rehold.com/page/optout",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on Rehold and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "cocofinder",
+    "name": "CocoFinder",
+    "searchUrl": "https://cocofinder.com",
+    "optOutUrl": "https://cocofinder.com/remove-my-info",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on CocoFinder and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "peekyou",
+    "name": "PeekYou",
+    "searchUrl": "https://www.peekyou.com",
+    "optOutUrl": "https://www.peekyou.com/about/contact/optout",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on PeekYou and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "locatefamily",
+    "name": "LocateFamily",
+    "searchUrl": "https://www.locatefamily.com",
+    "optOutUrl": "https://www.locatefamily.com/removal.html",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on LocateFamily and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Complete the CAPTCHA yourself",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "spyfly",
+    "name": "SpyFly",
+    "searchUrl": "https://www.spyfly.com",
+    "optOutUrl": "https://www.spyfly.com/help-center/remove-info",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": [
+      "Search your name on SpyFly and open the listing that matches you",
+      "Copy the listing URL into Unlist",
+      "Open the opt-out page and paste the listing URL or enter your details",
+      "Click the confirmation link in the email they send",
+      "Search again in a few days to check that the listing is gone"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "acxiom",
+    "name": "Acxiom",
+    "searchUrl": "https://www.acxiom.com",
+    "optOutUrl": "https://isapps.acxiom.com/optout/optout.aspx",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "low",
+    "steps": [
+      "Open the Acxiom opt-out form",
+      "Choose the options to opt out of marketing and people-search data",
+      "Enter your name, addresses and email, then submit",
+      "Confirm from the email Acxiom sends"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "lexisnexis",
+    "name": "LexisNexis",
+    "searchUrl": "https://www.lexisnexis.com",
+    "optOutUrl": "https://optout.lexisnexis.com/",
     "method": "id_upload",
     "optOutEmail": null,
     "needsCaptcha": false,
     "needsEmailConfirm": true,
     "needsId": true,
-    "relistRisk": "high",
-    "steps": ["Find your profile on MyLife", "Submit the removal form", "Verify your identity if asked"],
+    "relistRisk": "low",
+    "steps": [
+      "Open the LexisNexis opt-out form",
+      "Choose the reason for your request",
+      "Enter your details and upload proof of identity if asked",
+      "Confirm from the email LexisNexis sends"
+    ],
+    "lastVerified": ""
+  },
+  {
+    "id": "epsilon",
+    "name": "Epsilon",
+    "searchUrl": "https://www.epsilon.com",
+    "optOutUrl": "https://legal.epsilon.com/dsr",
+    "method": "email",
+    "optOutEmail": "optout@epsilon.com",
+    "needsCaptcha": false,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "low",
+    "steps": [
+      "Send a deletion request to Epsilon's opt-out email using Unlist's request panel",
+      "Keep the reply for your records"
+    ],
     "lastVerified": ""
   }
 ]
