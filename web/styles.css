@@ -430,3 +430,68 @@ table.brokers td a {
 .status-text.error {
   color: var(--st-relisted);
 }
+
+/* Phones: the broker table becomes a list of two-line rows
+   (name + status, then method + next date). */
+@media (max-width: 640px) {
+  .topbar {
+    gap: 1.25rem;
+    padding: 0.75rem 1rem;
+  }
+
+  main {
+    padding: 1rem;
+  }
+
+  table.brokers thead {
+    position: absolute;
+    left: -9999px;
+  }
+
+  table.brokers,
+  table.brokers tbody {
+    display: block;
+  }
+
+  table.brokers tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.2rem 0.75rem;
+    align-items: center;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  table.brokers tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  table.brokers td {
+    padding: 0;
+    border: 0;
+  }
+
+  table.brokers td:nth-child(1) {
+    grid-area: 1 / 1;
+  }
+
+  table.brokers td:nth-child(3) {
+    grid-area: 1 / 2;
+    justify-self: end;
+  }
+
+  table.brokers td:nth-child(2),
+  table.brokers td:nth-child(4) {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  table.brokers td:nth-child(2) {
+    grid-area: 2 / 1;
+  }
+
+  table.brokers td:nth-child(4) {
+    grid-area: 2 / 2;
+    justify-self: end;
+  }
+}
