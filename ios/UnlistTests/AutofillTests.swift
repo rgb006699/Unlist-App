@@ -36,11 +36,13 @@ import WebKit
 @MainActor
 private final class TestPage: NSObject, WKNavigationDelegate {
     let web: WKWebView
+    private let frames = FrameTracker()
     private var loaded: CheckedContinuation<Void, Never>?
 
     override init() {
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .nonPersistent()
+        frames.install(in: config)
         web = WKWebView(frame: CGRect(x: 0, y: 0, width: 400, height: 800), configuration: config)
         super.init()
         web.navigationDelegate = self
@@ -60,7 +62,7 @@ private final class TestPage: NSObject, WKNavigationDelegate {
 
     @discardableResult
     func fill(selectors: [AutofillField: String]? = nil) async throws -> Int {
-        await AutofillRunner.fill(web, payload: autofillPayload(Fixtures.profile, selectors: selectors))
+        await AutofillRunner.fill(web, frames: frames, payload: autofillPayload(Fixtures.profile, selectors: selectors))
     }
 
     func value(_ selector: String) async throws -> String {
@@ -224,6 +226,19 @@ private final class TestPage: NSObject, WKNavigationDelegate {
         #expect(try await page.value("#a1") == "22 New St")
         #expect(try await page.value("#a2") == "")
         #expect(try await page.value("#a3") == "")
+    }
+
+    @Test func formsInsideIframesAreFilled() async throws {
+        let page = TestPage()
+        await page.load(#"""
+        <label for="ln">Last name</label><input id="ln">
+        <iframe srcdoc="<label for='fn'>First name</label><input id='fn'>"></iframe>
+        """#)
+        #expect(try await page.fill() == 2)
+        #expect(try await page.value("#ln") == "Doe")
+        let inner = try await page.web.evaluateJavaScript(
+            "document.querySelector('iframe').contentDocument.querySelector('#fn').value") as? String
+        #expect(inner == "Jane")
     }
 
     @Test func lookalikeLabelsAreLeftEmpty() async throws {

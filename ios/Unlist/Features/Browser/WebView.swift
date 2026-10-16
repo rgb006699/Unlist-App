@@ -26,6 +26,7 @@ func isIgnorableLoadError(_ error: Error) -> Bool {
 @Observable
 final class BrowserState: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored let webView: WKWebView
+    @ObservationIgnored private let frames = FrameTracker()
     private(set) var host = ""
     private(set) var isLoading = false
     private(set) var errorText: String?
@@ -42,6 +43,7 @@ final class BrowserState: NSObject, WKNavigationDelegate, WKUIDelegate {
         host = url.host() ?? ""
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .nonPersistent()
+        frames.install(in: config)
         webView = WKWebView(frame: .zero, configuration: config)
         super.init()
         webView.navigationDelegate = self
@@ -68,7 +70,7 @@ final class BrowserState: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     /// Runs the fill script on the current page; returns how many fields it filled.
     func fill(payload: String) async -> Int {
-        await AutofillRunner.fill(webView, payload: payload)
+        await AutofillRunner.fill(webView, frames: frames, payload: payload)
     }
 
     // MARK: WKNavigationDelegate
