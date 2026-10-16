@@ -7,6 +7,11 @@ struct BrowserTarget: Identifiable, Hashable {
     let url: URL
 }
 
+/// The title of the "apply to the whole group?" dialog.
+func groupQuestion(count: Int, status: Status) -> String {
+    "Mark all \(count) sites in this group as \(status.label.lowercased())?"
+}
+
 /// A broker's site inside Unlist, with Fill, copy chips and status shortcuts.
 struct BrokerBrowserView: View {
     let target: BrowserTarget
@@ -43,10 +48,17 @@ struct BrokerBrowserView: View {
                 }
             }
             .overlay(alignment: .top) {
-                if state.isLoading { ProgressView().progressViewStyle(.linear).tint(.accentColor) }
+                if state.isLoading {
+                    ProgressView().progressViewStyle(.linear).tint(.accentColor)
+                        .accessibilityLabel("Loading page")
+                }
             }
             .safeAreaInset(edge: .bottom) { bottomBar }
             .onAppear { state.start() }
+            .onChange(of: message) { _, text in
+                // VoiceOver users hear what Fill or Mark as did.
+                if let text { AccessibilityNotification.Announcement(text).post() }
+            }
             .navigationTitle(state.host)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -60,7 +72,7 @@ struct BrokerBrowserView: View {
                     }
                 }
             }
-            .confirmationDialog(groupQuestion, isPresented: Binding(get: { pendingStatus != nil }, set: { if !$0 { pendingStatus = nil } }),
+            .confirmationDialog(groupTitle, isPresented: Binding(get: { pendingStatus != nil }, set: { if !$0 { pendingStatus = nil } }),
                                 titleVisibility: .visible) {
                 Button("Apply to all") { apply(applyToGroup: true) }
                 Button("Just this one") { apply(applyToGroup: false) }
@@ -69,8 +81,9 @@ struct BrokerBrowserView: View {
         }
     }
 
-    private var groupQuestion: String {
-        "Apply to all \(model.groupMembers(of: target.brokerId).count) sites in this group?"
+    private var groupTitle: String {
+        guard let status = pendingStatus else { return "" }
+        return groupQuestion(count: model.groupMembers(of: target.brokerId).count, status: status)
     }
 
     private var bottomBar: some View {
@@ -92,7 +105,7 @@ struct BrokerBrowserView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(filling || state.isLoading)
+                    .disabled(filling || !state.canFill)
 
                     markMenu
                 }

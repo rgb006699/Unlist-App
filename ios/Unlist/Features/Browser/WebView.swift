@@ -14,6 +14,12 @@ func navigationDecision(for url: URL, userInitiated: Bool) -> NavigationDecision
     }
 }
 
+/// A new window (target=_blank) opens in place only when the person tapped a
+/// link or sent a form; script popups such as ads are dropped.
+func opensPopupInPlace(_ type: WKNavigationType) -> Bool {
+    type == .linkActivated || type == .formSubmitted
+}
+
 /// Load "errors" that just mean a navigation was cancelled or handed off.
 func isIgnorableLoadError(_ error: Error) -> Bool {
     let e = error as NSError
@@ -29,6 +35,9 @@ final class BrowserState: NSObject, WKNavigationDelegate, WKUIDelegate {
     @ObservationIgnored private let frames = FrameTracker()
     private(set) var host = ""
     private(set) var isLoading = false
+    /// True once the page's document exists, which is long before ads and
+    /// trackers finish loading.
+    private(set) var canFill = false
     private(set) var errorText: String?
     private(set) var currentURL: URL?
 
@@ -88,11 +97,19 @@ final class BrowserState: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         isLoading = true
+        canFill = false
         errorText = nil
+    }
+
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        canFill = true
+        currentURL = webView.url ?? currentURL
+        host = webView.url?.host() ?? host
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         isLoading = false
+        canFill = true
         currentURL = webView.url ?? currentURL
         host = webView.url?.host() ?? host
     }
@@ -113,10 +130,12 @@ final class BrowserState: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     // MARK: WKUIDelegate
 
-    /// Links that open a new window load here instead.
+    /// Tapped links that open a new window load here instead.
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
                  for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        if navigationAction.targetFrame == nil { webView.load(navigationAction.request) }
+        if navigationAction.targetFrame == nil, opensPopupInPlace(navigationAction.navigationType) {
+            webView.load(navigationAction.request)
+        }
         return nil
     }
 }

@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import WebKit
 @testable import Unlist
 
 @Suite struct NavigationRuleTests {
@@ -36,5 +37,34 @@ import Testing
         #expect(!state.webView.isLoading)
         state.start()
         #expect(state.webView.isLoading || state.webView.url != nil)
+    }
+}
+
+@Suite struct PopupRuleTests {
+    @Test func onlyTappedLinksAndFormsOpenNewWindowsInPlace() {
+        #expect(opensPopupInPlace(.linkActivated))
+        #expect(opensPopupInPlace(.formSubmitted))
+        // window.open from a page script (ads, pop-unders) is dropped.
+        #expect(!opensPopupInPlace(.other))
+    }
+}
+
+@MainActor
+@Suite struct FillReadinessTests {
+    @Test func fillIsReadyOnceThePageCommitsNotWhenItFinishes() {
+        let state = BrowserState(url: URL(string: "https://example.com/")!)
+        state.webView(state.webView, didStartProvisionalNavigation: nil)
+        #expect(!state.canFill)
+        state.webView(state.webView, didCommit: nil)
+        #expect(state.isLoading)
+        #expect(state.canFill)
+        state.webView(state.webView, didStartProvisionalNavigation: nil)
+        #expect(!state.canFill)
+    }
+}
+
+@Suite struct GroupQuestionTests {
+    @Test func theQuestionNamesTheStatus() {
+        #expect(groupQuestion(count: 5, status: .requestSent) == "Mark all 5 sites in this group as request sent?")
     }
 }
