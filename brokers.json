@@ -1,0 +1,44 @@
+[
+  {
+    "id": "spokeo",
+    "name": "Spokeo",
+    "searchUrl": "https://www.spokeo.com",
+    "optOutUrl": "https://www.spokeo.com/optout",
+    "method": "web_form",
+    "optOutEmail": null,
+    "needsCaptcha": true,
+    "needsEmailConfirm": true,
+    "needsId": false,
+    "relistRisk": "high",
+    "steps": ["Search your name on Spokeo and open your listing", "Copy the listing URL", "Paste it into the opt-out form with your email", "Click the confirmation link Spokeo emails you"],
+    "lastVerified": ""
+  },
+  {
+    "id": "acxiom",
+    "name": "Acxiom",
+    "searchUrl": "https://www.acxiom.com",
+    "optOutUrl": "https://isapps.acxiom.com/optout/optout.aspx",
+    "method": "email",
+    "optOutEmail": "consumeradvo@acxiom.com",
+    "needsCaptcha": false,
+    "needsEmailConfirm": false,
+    "needsId": false,
+    "relistRisk": "medium",
+    "steps": ["Send a deletion request to the opt-out email", "Wait for confirmation"],
+    "lastVerified": ""
+  },
+  {
+    "id": "mylife",
+    "name": "MyLife",
+    "searchUrl": "https://www.mylife.com",
+    "optOutUrl": "https://www.mylife.com/ccpa/index.pubview",
+    "method": "id_upload",
+    "optOutEmail": null,
+    "needsCaptcha": false,
+    "needsEmailConfirm": true,
+    "needsId": true,
+    "relistRisk": "high",
+    "steps": ["Find your profile on MyLife", "Submit the removal form", "Verify your identity if asked"],
+    "lastVerified": ""
+  }
+]
