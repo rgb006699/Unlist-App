@@ -167,3 +167,21 @@ test("restore on healthy data is refused with 409 NOTHING_TO_RESTORE", async () 
   expect(res.body.code).toBe("NOTHING_TO_RESTORE");
   expect((await dataOnDisk()).records.beta).toBeDefined();
 });
+
+test("malformed JSON is a 400 INVALID, not a server error", async () => {
+  const res = await request(app).patch("/api/brokers/alpha").set("Content-Type", "application/json").send("{bad");
+  expect(res.status).toBe(400);
+  expect(res.body).toEqual({ code: "INVALID", message: "Request body is not valid JSON" });
+});
+
+test("a body over the size limit is a 413 TOO_LARGE with a readable message", async () => {
+  const res = await request(app).patch("/api/brokers/alpha").send({ notes: "a".repeat(2_000_000) });
+  expect(res.status).toBe(413);
+  expect(res.body.code).toBe("TOO_LARGE");
+  expect(res.body.message).toMatch(/too long/i);
+});
+
+test("notes up to 200 KB are accepted", async () => {
+  const res = await request(app).patch("/api/brokers/alpha").send({ notes: "a".repeat(200_000) });
+  expect(res.status).toBe(200);
+});

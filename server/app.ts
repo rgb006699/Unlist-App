@@ -41,7 +41,7 @@ export function createApp(opts: { dataDir: string; brokersPath: string; today?: 
       next();
     }
   });
-  app.use(express.json());
+  app.use(express.json({ limit: "1mb" }));
 
   app.get(
     "/api/profile",
@@ -103,7 +103,12 @@ export function createApp(opts: { dataDir: string; brokersPath: string; today?: 
   );
 
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
-    if (err instanceof HttpError) {
+    const bodyError = (err as { type?: string })?.type;
+    if (bodyError === "entity.parse.failed") {
+      res.status(400).json({ code: "INVALID", message: "Request body is not valid JSON" });
+    } else if (bodyError === "entity.too.large") {
+      res.status(413).json({ code: "TOO_LARGE", message: "That's too long to save. Try shortening your notes." });
+    } else if (err instanceof HttpError) {
       res.status(err.status).json({ code: err.code, message: err.message });
     } else if (err instanceof ZodError) {
       const issue = err.issues[0];
