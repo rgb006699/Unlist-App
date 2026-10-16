@@ -80,6 +80,20 @@ final class AppModel {
 
     // MARK: Changes
 
+    /// Brokers sharing `id`'s opt-out, starting with `id`; empty when it has no group.
+    func groupMembers(of id: String) -> [Broker] {
+        guard let broker = brokers.first(where: { $0.id == id }), let group = broker.group else { return [] }
+        return [broker] + brokers.filter { $0.group == group && $0.id != id }
+    }
+
+    func setStatus(_ id: String, _ status: Status, applyToGroup: Bool) {
+        let ids = applyToGroup ? groupMembers(of: id).map(\.id) : [id]
+        mutateRecords(ids.isEmpty ? [id] : ids) { rec, d in
+            guard rec?.status != status else { return rec }
+            return applyStatus(rec, status, today: today, recheckDays: d.settings.recheckDays)
+        }
+    }
+
     func setStatus(_ id: String, _ status: Status) {
         mutateRecord(id) { rec, d in
             guard rec?.status != status else { return rec }
@@ -132,10 +146,20 @@ final class AppModel {
     }
 
     private func mutateRecord(_ id: String, _ change: (BrokerRecord?, DataFile) -> BrokerRecord?) {
-        guard var d = data, loadError == nil, brokers.contains(where: { $0.id == id }) else { return }
-        let before = d.records[id]
-        guard let after = change(before, d), after != before else { return }
-        d.records[id] = after
+        mutateRecords([id], change)
+    }
+
+    /// Applies `change` to each broker's record and saves once.
+    private func mutateRecords(_ ids: [String], _ change: (BrokerRecord?, DataFile) -> BrokerRecord?) {
+        guard var d = data, loadError == nil else { return }
+        var changed = false
+        for id in ids where brokers.contains(where: { $0.id == id }) {
+            let before = d.records[id]
+            guard let after = change(before, d), after != before else { continue }
+            d.records[id] = after
+            changed = true
+        }
+        guard changed else { return }
         do {
             try store.save(d)
             data = d

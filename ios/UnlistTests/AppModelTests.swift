@@ -161,3 +161,52 @@ extension FakeScheduler {
         #expect(!model.profileHasUnsavedChanges)
     }
 }
+
+@MainActor
+@Suite struct GroupStatusTests {
+    let dir = FileManager.default.temporaryDirectory.appendingPathComponent("unlist-group-\(UUID().uuidString)")
+    let scheduler = FakeScheduler()
+
+    var brokers: [Broker] {
+        var a = Fixtures.broker("alpha", "Alpha"); a.group = "pc"
+        var b = Fixtures.broker("beta", "Beta"); b.group = "pc"
+        let c = Fixtures.broker("gamma", "Gamma")
+        return [a, b, c]
+    }
+
+    func makeModel() -> AppModel {
+        let model = AppModel(store: DataStore(directory: dir), brokers: brokers, scheduler: scheduler, today: { Fixtures.today })
+        model.load()
+        return model
+    }
+
+    func onDisk() throws -> DataFile { try DataStore(directory: dir).load() }
+
+    @Test func groupMembersStartWithTheBroker() {
+        let model = makeModel()
+        #expect(model.groupMembers(of: "beta").map(\.id) == ["beta", "alpha"])
+        #expect(model.groupMembers(of: "gamma").isEmpty)
+    }
+
+    @Test func applyToAllUpdatesEveryMemberInOneSave() async throws {
+        let model = makeModel()
+        model.setStatus("gamma", .found) // earlier save, so .bak exists
+        model.setStatus("alpha", .removed, applyToGroup: true)
+        await model.reminderSync?.value
+        let d = try onDisk()
+        #expect(d.records["alpha"]?.recheckAt == "2027-01-13")
+        #expect(d.records["beta"]?.recheckAt == "2027-01-13")
+        #expect(d.records["beta"]?.history.count == 1)
+        #expect(d.records["gamma"]?.status == .found)
+        // One save: the backup is the state before the group change.
+        let bak = try JSONDecoder().decode(DataFile.self, from: Data(contentsOf: dir.appendingPathComponent("data.json.bak")))
+        #expect(bak.records["alpha"] == nil && bak.records["beta"] == nil)
+        #expect(await scheduler.scheduled.last?.map(\.brokerId).sorted() == ["alpha", "beta"])
+    }
+
+    @Test func justThisOneLeavesTheOthers() throws {
+        let model = makeModel()
+        model.setStatus("alpha", .found, applyToGroup: false)
+        #expect(try onDisk().records["beta"] == nil)
+    }
+}
