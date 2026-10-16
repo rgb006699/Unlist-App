@@ -247,6 +247,7 @@ label {
 
 .due-panel li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0;
@@ -257,8 +258,13 @@ label {
   border-top: 0;
 }
 
+.due-panel li .name .muted {
+  white-space: nowrap;
+}
+
 .due-panel li .name {
-  flex: 1;
+  flex: 1 1 12rem;
+  min-width: 0;
 }
 
 .filters {
@@ -314,6 +320,10 @@ table.brokers td a {
 
 /* Detail */
 
+.detail-grid > * {
+  min-width: 0;
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
@@ -367,6 +377,7 @@ table.brokers td a {
 
 .preview {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   font: 0.88rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
   background: var(--bg);
   border: 1px solid var(--line);
@@ -411,16 +422,68 @@ table.brokers td a {
 
 .address-row {
   display: grid;
-  grid-template-columns: auto 2fr 1.2fr 4rem 6rem auto;
+  grid-template-columns: auto minmax(0, 2fr) minmax(0, 1.2fr) 4rem 6rem auto;
   gap: 0.5rem;
   align-items: center;
-  margin-bottom: 0.4rem;
+  border: 0;
+  padding: 0;
+  margin: 0 0 0.4rem;
+  min-width: 0;
 }
 
+.address-row input {
+  min-width: 0;
+  width: 100%;
+}
+
+.addr-current {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+  margin: 0;
+}
+
+.addr-current input {
+  width: auto;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Stacked address card on narrow screens:
+   Current ......... Remove
+   Street
+   City
+   State | ZIP */
 @media (max-width: 700px) {
   .address-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "current remove"
+      "street street"
+      "city city"
+      "state zip";
+    padding: 0.75rem 0;
+    margin: 0;
+    border-top: 1px solid var(--line);
   }
+
+  .address-row:last-of-type {
+    margin-bottom: 0.75rem;
+  }
+
+  .addr-current { grid-area: current; }
+  .addr-remove { grid-area: remove; justify-self: end; }
+  .addr-street { grid-area: street; }
+  .addr-city { grid-area: city; }
+  .addr-state { grid-area: state; }
+  .addr-zip { grid-area: zip; }
 }
 
 .status-text {
@@ -434,6 +497,26 @@ table.brokers td a {
 /* Phones: the broker table becomes a list of two-line rows
    (name + status, then method + next date). */
 @media (max-width: 640px) {
+  /* 16px stops iOS Safari from zooming in when a field is tapped. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .filters > div {
+    flex: 1 1 8rem;
+  }
+
+  .filters select,
+  .filters input {
+    width: 100%;
+  }
+
+  .list-field input {
+    min-width: 0;
+  }
+
   .topbar {
     gap: 1.25rem;
     padding: 0.75rem 1rem;

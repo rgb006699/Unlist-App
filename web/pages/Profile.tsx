@@ -111,11 +111,11 @@ export default function Profile() {
           Add past addresses too. Brokers often list old ones.
         </p>
         {profile.addresses.map((a, i) => (
-          <fieldset key={i} className="address-row" style={{ border: 0, padding: 0, margin: "0 0 0.4rem" }}>
-            <legend className="muted" style={{ position: "absolute", left: "-9999px" }}>
+          <fieldset key={i} className="address-row">
+            <legend className="visually-hidden">
               Address {i + 1}
             </legend>
-            <label style={{ display: "flex", gap: "0.3rem", margin: 0, alignItems: "center" }}>
+            <label className="addr-current">
               <input
                 type="radio"
                 name="current-address"
@@ -124,11 +124,12 @@ export default function Profile() {
               />
               Current
             </label>
-            <input aria-label="Street" placeholder="Street" value={a.street} onChange={(e) => setAddress(i, { street: e.target.value })} />
-            <input aria-label="City" placeholder="City" value={a.city} onChange={(e) => setAddress(i, { city: e.target.value })} />
-            <input aria-label="State" placeholder="State" value={a.state} onChange={(e) => setAddress(i, { state: e.target.value })} />
-            <input aria-label="ZIP" placeholder="ZIP" value={a.zip} onChange={(e) => setAddress(i, { zip: e.target.value })} />
+            <input className="addr-street" aria-label="Street" placeholder="Street" value={a.street} onChange={(e) => setAddress(i, { street: e.target.value })} />
+            <input className="addr-city" aria-label="City" placeholder="City" value={a.city} onChange={(e) => setAddress(i, { city: e.target.value })} />
+            <input className="addr-state" aria-label="State" placeholder="State" value={a.state} onChange={(e) => setAddress(i, { state: e.target.value })} />
+            <input className="addr-zip" aria-label="ZIP" inputMode="numeric" placeholder="ZIP" value={a.zip} onChange={(e) => setAddress(i, { zip: e.target.value })} />
             <button
+              className="addr-remove"
               type="button"
               aria-label={`Remove address ${i + 1}`}
               onClick={() => set({ addresses: profile.addresses.filter((_, j) => j !== i) })}
