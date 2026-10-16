@@ -22,11 +22,39 @@ const renderDashboard = () =>
   );
 
 const bodyRows = () => within(screen.getByRole("table")).getAllByRole("row").slice(1);
+const names = () => bodyRows().map((r) => within(r).getByRole("link").textContent);
 
-test("shows the progress line", async () => {
+test("shows the headline and a count per tile", async () => {
   mockApi({ "GET /api/brokers": { body: brokersResponse() } });
   renderDashboard();
-  expect(await screen.findByText("1 of 5 removed · 2 pending · 1 need recheck")).toBeInTheDocument();
+  expect(await screen.findByText("1 of 5")).toBeInTheDocument();
+  const tiles = within(screen.getByRole("group", { name: "Filter by progress" })).getAllByRole("button");
+  expect(tiles.map((t) => t.textContent)).toEqual(["1Removed", "2In progress", "1Need recheck", "1Not checked yet"]);
+});
+
+test("tapping a tile filters the list, tapping again clears it", async () => {
+  mockApi({ "GET /api/brokers": { body: brokersResponse() } });
+  renderDashboard();
+  await screen.findByRole("table");
+  const tile = screen.getByRole("button", { name: /In progress/ });
+  await userEvent.click(tile);
+  expect(tile).toHaveAttribute("aria-pressed", "true");
+  expect(names()).toEqual(["Whitepages", "Acxiom"]);
+  await userEvent.click(tile);
+  expect(names()).toHaveLength(5);
+});
+
+test("first-run guide shows only before anything is started", async () => {
+  mockApi({ "GET /api/brokers": { body: brokersResponse({}) } });
+  renderDashboard();
+  expect(await screen.findByRole("heading", { name: "How Unlist works" })).toBeInTheDocument();
+});
+
+test("no first-run guide once work has started", async () => {
+  mockApi({ "GET /api/brokers": { body: brokersResponse() } });
+  renderDashboard();
+  await screen.findByRole("table");
+  expect(screen.queryByRole("heading", { name: "How Unlist works" })).not.toBeInTheDocument();
 });
 
 test("due panel: still removed and re-listed", async () => {
@@ -81,15 +109,15 @@ test("filters by status, method and name", async () => {
   expect(bodyRows()).toHaveLength(5);
 
   await userEvent.selectOptions(screen.getByLabelText("Status"), "found");
-  expect(bodyRows().map((r) => within(r).getAllByRole("cell")[0].textContent)).toEqual(["Whitepages"]);
+  expect(names()).toEqual(["Whitepages"]);
 
   await userEvent.selectOptions(screen.getByLabelText("Status"), "");
   await userEvent.selectOptions(screen.getByLabelText("Method"), "email");
-  expect(bodyRows().map((r) => within(r).getAllByRole("cell")[0].textContent)).toEqual(["Acxiom"]);
+  expect(names()).toEqual(["Acxiom"]);
 
   await userEvent.selectOptions(screen.getByLabelText("Method"), "");
   await userEvent.type(screen.getByLabelText("Search"), "spo");
-  expect(bodyRows().map((r) => within(r).getAllByRole("cell")[0].textContent)).toEqual(["Spokeo"]);
+  expect(names()).toEqual(["Spokeo"]);
 });
 
 test("clicking a row opens the broker", async () => {
@@ -100,12 +128,12 @@ test("clicking a row opens the broker", async () => {
   expect(screen.getByText("detail page")).toBeInTheDocument();
 });
 
-test("table shows labels and next date", async () => {
+test("table shows broker, method, status and next step", async () => {
   mockApi({ "GET /api/brokers": { body: brokersResponse() } });
   renderDashboard();
   await screen.findByRole("table");
   const cells = (i: number) => within(bodyRows()[i]).getAllByRole("cell").map((c) => c.textContent);
-  expect(cells(0)).toEqual(["Spokeo", "Web form", "Not checked", "—"]);
-  expect(cells(2)).toEqual(["Acxiom", "Email", "Request sent", "Sent 2026-10-05"]);
-  expect(cells(3)).toEqual(["MyLife", "ID upload", "Confirmed removed", "Recheck 2026-12-30"]);
+  expect(cells(0)).toEqual(["SpokeoWeb form", "Not checked", "Search for your listing"]);
+  expect(cells(2)).toEqual(["AcxiomEmail", "Request sent", "Waiting since Oct 5, 2026"]);
+  expect(cells(3)).toEqual(["MyLifeID upload", "Confirmed removed", "Recheck Dec 30, 2026"]);
 });

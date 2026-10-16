@@ -10,6 +10,7 @@ import type { Profile } from "../../shared/types";
 import { calls, mockApi } from "../test/mockApi";
 import { brokers, brokersResponse, records, TODAY } from "../test/fixtures";
 import BrokerDetail from "./BrokerDetail";
+import { STATUS_HELP } from "../labels";
 
 const profile: Profile = {
   fullName: "Jane Doe",
@@ -78,7 +79,9 @@ test("changing status saves it", async () => {
   await userEvent.selectOptions(await screen.findByLabelText("Status"), "request_sent");
   const [, init] = calls(fetch, "PATCH /api/brokers/spokeo")[0];
   expect(JSON.parse(String(init?.body))).toEqual({ status: "request_sent" });
-  expect(await screen.findByText(`Request sent ${TODAY}`)).toBeInTheDocument();
+  const dates = await screen.findByRole("list", { name: "Dates" });
+  expect(dates).toHaveTextContent("Request sentOct 15, 2026 · today");
+  expect(screen.getByText(STATUS_HELP.request_sent)).toBeInTheDocument();
 });
 
 test("notes and listing URL save on blur", async () => {
@@ -103,7 +106,7 @@ test("blur without a change does not save", async () => {
 test("history is newest first", async () => {
   setup();
   const items = within(await screen.findByRole("list", { name: "History" })).getAllByRole("listitem");
-  expect(items.map((i) => i.textContent)).toEqual(["2026-10-05Request sent", "2026-10-01Found"]);
+  expect(items.map((i) => i.textContent)).toEqual(["Oct 5, 2026Request sent", "Oct 1, 2026Found"]);
 });
 
 test("request panel previews, copies and opens mail", async () => {
@@ -142,13 +145,14 @@ test("a broker moved back from removed no longer shows a Removed date", async ()
   });
   renderDetail("mylife");
   await screen.findByRole("heading", { name: "MyLife" });
-  expect(screen.queryByText(/^Removed \d/)).not.toBeInTheDocument();
-  expect(screen.queryByText(/^Recheck \d/)).not.toBeInTheDocument();
+  const dates = screen.queryByRole("list", { name: "Dates" });
+  expect(dates?.textContent ?? "").not.toMatch(/Removed|Recheck/);
 });
 
 test("a removed broker shows its removed and recheck dates", async () => {
   mockApi({ "GET /api/brokers": { body: brokersResponse() }, "GET /api/profile": { body: profile } });
   renderDetail("mylife");
-  expect(await screen.findByText("Removed 2026-10-01")).toBeInTheDocument();
-  expect(screen.getByText("Recheck 2026-12-30")).toBeInTheDocument();
+  const dates = await screen.findByRole("list", { name: "Dates" });
+  expect(dates).toHaveTextContent("RemovedOct 1, 2026 · 2 weeks ago");
+  expect(dates).toHaveTextContent("RecheckDec 30, 2026 · in 3 months");
 });

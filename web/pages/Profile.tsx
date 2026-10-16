@@ -1,3 +1,4 @@
+import { CircleAlert, CircleCheck, Lock, Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { Address, Profile as ProfileT } from "../../shared/types";
 import { api, ApiError } from "../api";
@@ -22,12 +23,14 @@ function clean(p: ProfileT): ProfileT {
 
 function ListField({
   title,
+  help,
   item,
   values,
   type = "text",
   onChange,
 }: {
   title: string;
+  help?: string;
   item: string;
   values: string[];
   type?: string;
@@ -35,9 +38,10 @@ function ListField({
 }) {
   return (
     <div className="list-field">
-      <h2>{title}</h2>
+      <span className="label">{title}</span>
+      {help && <p className="help" style={{ margin: "-0.2rem 0 0.6rem" }}>{help}</p>}
       {values.map((v, i) => (
-        <div className="row" key={i}>
+        <div className="list-row" key={i}>
           <input
             type={type}
             aria-label={`${item} ${i + 1}`}
@@ -46,14 +50,17 @@ function ListField({
           />
           <button
             type="button"
+            className="ghost icon-only"
             aria-label={`Remove ${item.toLowerCase()} ${i + 1}`}
+            title="Remove"
             onClick={() => onChange(values.filter((_, j) => j !== i))}
           >
-            Remove
+            <Trash2 size={18} aria-hidden="true" />
           </button>
         </div>
       ))}
-      <button type="button" onClick={() => onChange([...values, ""])}>
+      <button type="button" className="add" onClick={() => onChange([...values, ""])}>
+        <Plus size={16} aria-hidden="true" />
         Add {item.toLowerCase()}
       </button>
     </div>
@@ -69,7 +76,8 @@ export default function Profile() {
 
   const [failed, setFailed] = useState(false);
   const [saved, setSaved] = useState<ProfileT | null>(null);
-  useUnsavedChanges(profile !== null && JSON.stringify(profile) !== JSON.stringify(saved));
+  const dirty = profile !== null && JSON.stringify(profile) !== JSON.stringify(saved);
+  useUnsavedChanges(dirty);
 
   useEffect(() => {
     api
@@ -111,26 +119,40 @@ export default function Profile() {
     <form onSubmit={save}>
       <section className="card">
         <h1>Your details</h1>
-        <p className="muted">
-          Unlist fills your removal requests with these details. They stay in a file on this computer.
+        <p className="intro muted">
+          <Lock size={18} aria-hidden="true" />
+          <span>
+            Unlist uses these details to fill in your removal requests. They're saved only in a file on this computer.
+          </span>
         </p>
-        <div className="field" style={{ maxWidth: "28rem" }}>
+        <div className="field" style={{ maxWidth: "30rem" }}>
           <label htmlFor="p-name">Full name</label>
-          <input id="p-name" type="text" value={profile.fullName} onChange={(e) => set({ fullName: e.target.value })} />
+          <input
+            id="p-name"
+            type="text"
+            autoComplete="name"
+            value={profile.fullName}
+            onChange={(e) => set({ fullName: e.target.value })}
+          />
+          <p className="help">Your legal name, the way people-search sites would show it.</p>
         </div>
-        <ListField title="Other names" item="Other name" values={profile.aliases} onChange={(aliases) => set({ aliases })} />
+        <ListField
+          title="Other names"
+          help="Maiden names, nicknames or other spellings sites might use."
+          item="Other name"
+          values={profile.aliases}
+          onChange={(aliases) => set({ aliases })}
+        />
       </section>
 
       <section className="card">
         <h2>Addresses</h2>
-        <p className="muted" style={{ marginTop: 0 }}>
-          Add past addresses too. Brokers often list old ones.
+        <p className="help" style={{ margin: "-0.4rem 0 1rem" }}>
+          Add past addresses too — brokers often list old ones. Mark the one you live at now as current.
         </p>
         {profile.addresses.map((a, i) => (
           <fieldset key={i} className="address-row">
-            <legend className="visually-hidden">
-              Address {i + 1}
-            </legend>
+            <legend className="visually-hidden">Address {i + 1}</legend>
             <label className="addr-current">
               <input
                 type="radio"
@@ -140,40 +162,79 @@ export default function Profile() {
               />
               Current
             </label>
-            <input className="addr-street" aria-label="Street" placeholder="Street" value={a.street} onChange={(e) => setAddress(i, { street: e.target.value })} />
-            <input className="addr-city" aria-label="City" placeholder="City" value={a.city} onChange={(e) => setAddress(i, { city: e.target.value })} />
-            <input className="addr-state" aria-label="State" placeholder="State" value={a.state} onChange={(e) => setAddress(i, { state: e.target.value })} />
-            <input className="addr-zip" aria-label="ZIP" inputMode="numeric" placeholder="ZIP" value={a.zip} onChange={(e) => setAddress(i, { zip: e.target.value })} />
             <button
-              className="addr-remove"
+              className="addr-remove ghost icon-only"
               type="button"
               aria-label={`Remove address ${i + 1}`}
+              title="Remove address"
               onClick={() => set({ addresses: profile.addresses.filter((_, j) => j !== i) })}
             >
-              Remove
+              <Trash2 size={18} aria-hidden="true" />
             </button>
+            <div className="field addr-street">
+              <label htmlFor={`a${i}-street`}>Street</label>
+              <input id={`a${i}-street`} autoComplete="address-line1" value={a.street} onChange={(e) => setAddress(i, { street: e.target.value })} />
+            </div>
+            <div className="field addr-city">
+              <label htmlFor={`a${i}-city`}>City</label>
+              <input id={`a${i}-city`} autoComplete="address-level2" value={a.city} onChange={(e) => setAddress(i, { city: e.target.value })} />
+            </div>
+            <div className="field addr-state">
+              <label htmlFor={`a${i}-state`}>State</label>
+              <input id={`a${i}-state`} autoComplete="address-level1" value={a.state} onChange={(e) => setAddress(i, { state: e.target.value })} />
+            </div>
+            <div className="field addr-zip">
+              <label htmlFor={`a${i}-zip`}>ZIP</label>
+              <input
+                id={`a${i}-zip`}
+                inputMode="numeric"
+                autoComplete="postal-code"
+                value={a.zip}
+                onChange={(e) => setAddress(i, { zip: e.target.value })}
+              />
+            </div>
           </fieldset>
         ))}
-        <button type="button" onClick={() => set({ addresses: [...profile.addresses, newAddress()] })}>
+        <button type="button" className="add" onClick={() => set({ addresses: [...profile.addresses, newAddress()] })}>
+          <Plus size={16} aria-hidden="true" />
           Add address
         </button>
       </section>
 
       <section className="card">
+        <h2>Contact details</h2>
+        <p className="help" style={{ margin: "-0.4rem 0 0" }}>
+          People-search sites often show these too, and removal requests use them to find your records.
+        </p>
         <ListField title="Phone numbers" item="Phone" type="tel" values={profile.phones} onChange={(phones) => set({ phones })} />
         <ListField title="Email addresses" item="Email" type="email" values={profile.emails} onChange={(emails) => set({ emails })} />
       </section>
 
-      <div className="row">
+      <div className="savebar">
+        <span
+          className={`state ${state.kind === "error" ? "error" : state.kind === "saved" && !dirty ? "ok" : dirty ? "dirty" : ""}`}
+          role={state.kind === "error" ? "alert" : "status"}
+        >
+          {state.kind === "error" ? (
+            <>
+              <CircleAlert size={16} aria-hidden="true" />
+              {state.message}
+            </>
+          ) : state.kind === "saved" && !dirty ? (
+            <>
+              <CircleCheck size={16} aria-hidden="true" />
+              Saved
+            </>
+          ) : dirty ? (
+            "Unsaved changes"
+          ) : (
+            "No unsaved changes"
+          )}
+        </span>
         <button type="submit" className="primary" disabled={state.kind === "saving"}>
+          <Save size={16} aria-hidden="true" />
           Save
         </button>
-        {state.kind === "saved" && <span className="status-text">Saved</span>}
-        {state.kind === "error" && (
-          <span className="status-text error" role="alert">
-            {state.message}
-          </span>
-        )}
       </div>
     </form>
   );

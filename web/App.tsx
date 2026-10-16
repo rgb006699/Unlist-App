@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
+import { LayoutDashboard, ShieldCheck, UserRound } from "lucide-react";
 import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { api, ApiError, onApiSuccess } from "./api";
 import { ServerBanner } from "./components/ServerBanner";
@@ -71,12 +72,17 @@ export default function App() {
     <ReportErrorContext.Provider value={report}>
       <UnsavedContext.Provider value={setDirty}>
         <header className="topbar">
-          <span className="brand">Unlist</span>
+          <span className="brand">
+            <ShieldCheck size={22} strokeWidth={2.25} aria-hidden="true" />
+            Unlist
+          </span>
           <nav>
             <NavLink to="/" end onClick={guard}>
+              <LayoutDashboard size={17} aria-hidden="true" />
               Dashboard
             </NavLink>
             <NavLink to="/profile" onClick={guard}>
+              <UserRound size={17} aria-hidden="true" />
               Profile
             </NavLink>
           </nav>
