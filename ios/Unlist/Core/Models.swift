@@ -3,7 +3,7 @@ import Foundation
 // Same shapes and JSON keys as the web app (shared/types.ts), so a data file
 // written by either app can be read by the other.
 
-enum Method: String, Codable, CaseIterable, Sendable {
+enum RemovalMethod: String, Codable, CaseIterable, Sendable {
     case webForm = "web_form", email, phone, mail, idUpload = "id_upload"
 }
 
@@ -49,7 +49,7 @@ struct Broker: Codable, Identifiable, Hashable, Sendable {
     let name: String
     let searchUrl: String
     let optOutUrl: String
-    let method: Method
+    let method: RemovalMethod
     let optOutEmail: String?
     let needsCaptcha: Bool
     let needsEmailConfirm: Bool
