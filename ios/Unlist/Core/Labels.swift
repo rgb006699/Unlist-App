@@ -86,3 +86,54 @@ func nextStep(_ row: BrokerRow) -> String {
     case .relisted: return "Send a new request"
     }
 }
+
+/// Dashboard summary tiles; each one filters the list to its statuses.
+enum TileGroup: String, CaseIterable, Identifiable, Sendable {
+    case removed, inProgress, due, notChecked
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .removed: "Removed"
+        case .inProgress: "In progress"
+        case .due: "Need recheck"
+        case .notChecked: "Not checked yet"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .removed: ViewStatus.removed.symbol
+        case .inProgress: ViewStatus.requestSent.symbol
+        case .due: ViewStatus.due.symbol
+        case .notChecked: ViewStatus.notChecked.symbol
+        }
+    }
+
+    var statuses: Set<ViewStatus> {
+        switch self {
+        case .removed: [.removed]
+        case .inProgress: [.found, .requestSent, .relisted]
+        case .due: [.due]
+        case .notChecked: [.notChecked]
+        }
+    }
+
+    func count(in p: Progress) -> Int {
+        switch self {
+        case .removed: p.removed
+        case .inProgress: p.pending
+        case .due: p.due
+        case .notChecked: p.notChecked
+        }
+    }
+}
+
+func filterRows(_ rows: [BrokerRow], group: TileGroup?, query: String) -> [BrokerRow] {
+    let q = query.trimmingCharacters(in: .whitespaces).lowercased()
+    return rows.filter { row in
+        (group.map { $0.statuses.contains(row.view) } ?? true)
+            && (q.isEmpty || row.broker.name.lowercased().contains(q))
+    }
+}
