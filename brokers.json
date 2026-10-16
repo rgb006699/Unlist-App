@@ -95,7 +95,8 @@
       "Search for your record and select every listing that matches you",
       "Confirm the suppression — one request covers Intelius, Instant Checkmate, TruthFinder, US Search and ZabaSearch"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "group": "peopleconnect"
   },
   {
     "id": "instantcheckmate",
@@ -113,7 +114,8 @@
       "Search for your record and select every listing that matches you",
       "Confirm the suppression — one request covers Intelius, Instant Checkmate, TruthFinder, US Search and ZabaSearch"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "group": "peopleconnect"
   },
   {
     "id": "truthfinder",
@@ -131,7 +133,8 @@
       "Search for your record and select every listing that matches you",
       "Confirm the suppression — one request covers Intelius, Instant Checkmate, TruthFinder, US Search and ZabaSearch"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "group": "peopleconnect"
   },
   {
     "id": "ussearch",
@@ -149,7 +152,8 @@
       "Search for your record and select every listing that matches you",
       "Confirm the suppression — one request covers Intelius, Instant Checkmate, TruthFinder, US Search and ZabaSearch"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "group": "peopleconnect"
   },
   {
     "id": "zabasearch",
@@ -167,7 +171,8 @@
       "Search for your record and select every listing that matches you",
       "Confirm the suppression — one request covers Intelius, Instant Checkmate, TruthFinder, US Search and ZabaSearch"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "group": "peopleconnect"
   },
   {
     "id": "peoplefinders",
@@ -188,7 +193,8 @@
       "Click the confirmation link in the email they send",
       "Search again in a few days to check that the listing is gone"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "searchTemplate": "https://www.peoplefinders.com/name/{first:slug}-{last:slug}/{state:slug}/{city:slug}"
   },
   {
     "id": "truepeoplesearch",
@@ -208,7 +214,8 @@
       "Complete the CAPTCHA yourself",
       "Search again in a few days to check that the listing is gone"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "searchTemplate": "https://www.truepeoplesearch.com/results?name={first}%20{last}&citystatezip={city},%20{state}"
   },
   {
     "id": "fastpeoplesearch",
@@ -228,7 +235,8 @@
       "Complete the CAPTCHA yourself",
       "Search again in a few days to check that the listing is gone"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "searchTemplate": "https://www.fastpeoplesearch.com/name/{first:slug}-{last:slug}_{city:slug}-{state:slug}"
   },
   {
     "id": "radaris",
@@ -369,7 +377,8 @@
       "Click the confirmation link in the email they send",
       "Search again in a few days to check that the listing is gone"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "searchTemplate": "https://www.searchpeoplefree.com/find/{first:slug}-{last:slug}/{state:slug}/{city:slug}"
   },
   {
     "id": "usphonebook",
@@ -389,7 +398,8 @@
       "Complete the CAPTCHA yourself",
       "Search again in a few days to check that the listing is gone"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "searchTemplate": "https://www.usphonebook.com/{first:slug}-{last:slug}/{stateName:slug}/{city:slug}"
   },
   {
     "id": "smartbackgroundchecks",
@@ -469,7 +479,8 @@
       "Complete the CAPTCHA yourself",
       "Search again in a few days to check that the listing is gone"
     ],
-    "lastVerified": ""
+    "lastVerified": "",
+    "searchTemplate": "https://www.familytreenow.com/search/genealogy/results?first={first}&last={last}&citystatezip={city},%20{state}"
   },
   {
     "id": "addresses",
