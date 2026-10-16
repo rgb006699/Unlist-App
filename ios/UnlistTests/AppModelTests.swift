@@ -119,3 +119,40 @@ actor FakeScheduler: ReminderScheduler {
 extension FakeScheduler {
     func setGranted(_ value: Bool) { granted = value }
 }
+
+@MainActor
+@Suite struct ProfileDraftTests {
+    let dir = FileManager.default.temporaryDirectory.appendingPathComponent("unlist-draft-\(UUID().uuidString)")
+
+    func makeModel() -> AppModel {
+        let model = AppModel(store: DataStore(directory: dir), brokers: Fixtures.brokers, scheduler: FakeScheduler(), today: { Fixtures.today })
+        model.load()
+        return model
+    }
+
+    @Test func draftStartsClean() {
+        let model = makeModel()
+        #expect(model.profileDraft == .empty)
+        #expect(!model.profileHasUnsavedChanges)
+    }
+
+    @Test func editingMarksUnsavedAndSavingCleansAndPersists() throws {
+        let model = makeModel()
+        model.profileDraft.fullName = " Jane "
+        model.profileDraft.aliases = ["", "JD"]
+        #expect(model.profileHasUnsavedChanges)
+        try model.saveProfileDraft()
+        #expect(!model.profileHasUnsavedChanges)
+        #expect(model.profile.fullName == "Jane")
+        #expect(model.profileDraft.aliases == ["JD"])
+        #expect(try DataStore(directory: dir).load().profile.fullName == "Jane")
+    }
+
+    @Test func discardRestoresTheSavedProfile() {
+        let model = makeModel()
+        model.profileDraft.fullName = "Typo"
+        model.discardProfileDraft()
+        #expect(model.profileDraft == .empty)
+        #expect(!model.profileHasUnsavedChanges)
+    }
+}

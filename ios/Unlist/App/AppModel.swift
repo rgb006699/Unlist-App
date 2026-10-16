@@ -11,6 +11,8 @@ final class AppModel {
     private(set) var loadError: StoreError?
     private(set) var saveError: String?
     private(set) var today: String
+    /// The Profile form edits this copy; it is saved explicitly.
+    var profileDraft: Profile = .empty
     /// Set when a reminder is tapped; the UI opens that broker.
     var openBrokerId: String?
     /// The latest reminder sync, so tests (and callers) can wait for it.
@@ -36,6 +38,8 @@ final class AppModel {
 
     var profile: Profile { data?.profile ?? .empty }
 
+    var profileHasUnsavedChanges: Bool { profileDraft != profile }
+
     func row(_ id: String) -> BrokerRow? { rows.first { $0.broker.id == id } }
 
     // MARK: Loading
@@ -45,6 +49,7 @@ final class AppModel {
         do {
             data = try store.load()
             loadError = nil
+            profileDraft = profile
             syncReminders()
         } catch let error as StoreError {
             data = nil
@@ -62,6 +67,7 @@ final class AppModel {
         do {
             data = try store.restore()
             loadError = nil
+            profileDraft = profile
             syncReminders()
         } catch StoreError.nothingToRestore {
             load() // fixed by hand in the meantime
@@ -102,6 +108,14 @@ final class AppModel {
         try store.save(d)
         data = d
     }
+
+    func saveProfileDraft() throws {
+        let cleaned = cleanProfile(profileDraft)
+        try saveProfile(cleaned)
+        profileDraft = cleaned
+    }
+
+    func discardProfileDraft() { profileDraft = profile }
 
     func clearSaveError() { saveError = nil }
 

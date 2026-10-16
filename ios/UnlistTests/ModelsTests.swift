@@ -30,3 +30,16 @@ private let webJSON = #"""
         #expect(d.records.isEmpty)
     }
 }
+
+@Suite struct CleanProfileTests {
+    @Test func trimsAndDropsEmptyRows() {
+        let raw = Profile(fullName: "  Jane Doe ", aliases: ["J. Doe", "  ", ""],
+                          addresses: [Address(street: " 1 Main ", city: "Austin", state: "TX", zip: "78701", current: true),
+                                      Address()], // state-only (TX default) row
+                          phones: [" 512-555-0100 ", ""], emails: [""])
+        #expect(cleanProfile(raw) == Profile(
+            fullName: "Jane Doe", aliases: ["J. Doe"],
+            addresses: [Address(street: "1 Main", city: "Austin", state: "TX", zip: "78701", current: true)],
+            phones: ["512-555-0100"], emails: []))
+    }
+}

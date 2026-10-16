@@ -132,3 +132,19 @@ struct Progress: Equatable, Sendable {
     let due: Int
     let notChecked: Int
 }
+
+/// Trims every field and drops empty rows, including address rows with
+/// nothing but the default state filled in (web Profile save rules).
+func cleanProfile(_ p: Profile) -> Profile {
+    func trim(_ s: String) -> String { s.trimmingCharacters(in: .whitespacesAndNewlines) }
+    func list(_ xs: [String]) -> [String] { xs.map(trim).filter { !$0.isEmpty } }
+    return Profile(
+        fullName: trim(p.fullName),
+        aliases: list(p.aliases),
+        addresses: p.addresses
+            .map { Address(street: trim($0.street), city: trim($0.city), state: trim($0.state), zip: trim($0.zip), current: $0.current) }
+            .filter { !$0.street.isEmpty || !$0.city.isEmpty || !$0.zip.isEmpty },
+        phones: list(p.phones),
+        emails: list(p.emails)
+    )
+}
