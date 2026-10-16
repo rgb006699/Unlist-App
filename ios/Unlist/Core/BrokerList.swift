@@ -33,7 +33,15 @@ enum BrokerList {
                 log("Skipping broker \(label): optOutEmail is required when method is email")
             case .success(let broker) where seen.contains(broker.id):
                 log("Skipping broker \(label): duplicate id")
-            case .success(let broker):
+            case .success(var broker):
+                if let template = broker.searchTemplate, let problem = templateProblem(template) {
+                    log("Dropping searchTemplate for \(broker.id): \(problem)")
+                    broker.searchTemplate = nil
+                }
+                if let group = broker.group, group.range(of: "^[a-z0-9-]+$", options: .regularExpression) == nil {
+                    log("Dropping group for \(broker.id): must be a lowercase slug")
+                    broker.group = nil
+                }
                 seen.insert(broker.id)
                 brokers.append(broker)
             }

@@ -57,6 +57,47 @@ struct Broker: Codable, Identifiable, Hashable, Sendable {
     let relistRisk: RelistRisk
     let steps: [String]
     let lastVerified: String
+    /// Optional results URL with {first}, {last}, {city}… placeholders.
+    var searchTemplate: String? = nil
+    /// Brokers sharing one opt-out (e.g. "peopleconnect").
+    var group: String? = nil
+    /// Per-site CSS selectors for fields the generic fill misses.
+    var autofill: [AutofillField: String]? = nil
+}
+
+/// Profile values the "Fill my details" button can put into a page.
+enum AutofillField: String, CaseIterable, Codable, CodingKeyRepresentable, Sendable {
+    case fullName, firstName, lastName, email, phone, street, city, state, zip
+}
+
+extension Broker {
+    private enum CodingKeys: String, CodingKey {
+        case id, name, searchUrl, optOutUrl, method, optOutEmail, needsCaptcha, needsEmailConfirm, needsId
+        case relistRisk, steps, lastVerified, searchTemplate, group, autofill
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        searchUrl = try c.decode(String.self, forKey: .searchUrl)
+        optOutUrl = try c.decode(String.self, forKey: .optOutUrl)
+        method = try c.decode(RemovalMethod.self, forKey: .method)
+        optOutEmail = try c.decodeIfPresent(String.self, forKey: .optOutEmail)
+        needsCaptcha = try c.decode(Bool.self, forKey: .needsCaptcha)
+        needsEmailConfirm = try c.decode(Bool.self, forKey: .needsEmailConfirm)
+        needsId = try c.decode(Bool.self, forKey: .needsId)
+        relistRisk = try c.decode(RelistRisk.self, forKey: .relistRisk)
+        steps = try c.decode([String].self, forKey: .steps)
+        lastVerified = try c.decode(String.self, forKey: .lastVerified)
+        searchTemplate = try c.decodeIfPresent(String.self, forKey: .searchTemplate)
+        group = try c.decodeIfPresent(String.self, forKey: .group)
+        // Unknown keys are ignored rather than failing the whole broker.
+        if let raw = try c.decodeIfPresent([String: String].self, forKey: .autofill) {
+            let known = raw.compactMap { key, value in AutofillField(rawValue: key).map { ($0, value) } }
+            autofill = known.isEmpty ? nil : Dictionary(uniqueKeysWithValues: known)
+        }
+    }
 }
 
 struct Address: Codable, Hashable, Sendable {

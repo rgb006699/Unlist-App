@@ -85,3 +85,31 @@ private func encode(_ s: String) -> String {
 func mailtoURL(to: String?, subject: String, body: String) -> URL {
     URL(string: "mailto:\(to ?? "")?subject=\(encode(subject))&body=\(encode(body))")!
 }
+
+// MARK: Search templates
+
+let searchPlaceholderNames: Set<String> = ["first", "last", "middle", "city", "state", "stateName", "zip"]
+let searchPlaceholderModifiers: Set<String> = ["slug", "Slug"]
+
+/// The {name} or {name:modifier} placeholders in a search template, in order.
+func templatePlaceholders(_ template: String) -> [(name: String, modifier: String?)] {
+    let regex = try! NSRegularExpression(pattern: #"\{([^{}]*)\}"#)
+    let ns = template as NSString
+    return regex.matches(in: template, range: NSRange(location: 0, length: ns.length)).map { match in
+        let inner = ns.substring(with: match.range(at: 1))
+        let parts = inner.split(separator: ":", maxSplits: 1).map(String.init)
+        return (parts.first ?? "", parts.count > 1 ? parts[1] : nil)
+    }
+}
+
+/// Why a search template can't be used, or nil when it's fine.
+func templateProblem(_ template: String) -> String? {
+    guard template.hasPrefix("https://") else { return "must start with https://" }
+    let stripped = template.replacingOccurrences(of: #"\{[^{}]*\}"#, with: "", options: .regularExpression)
+    if stripped.contains("{") || stripped.contains("}") { return "has an unclosed placeholder" }
+    for p in templatePlaceholders(template) {
+        if !searchPlaceholderNames.contains(p.name) { return "unknown placeholder {\(p.name)}" }
+        if let m = p.modifier, !searchPlaceholderModifiers.contains(m) { return "unknown modifier :\(m)" }
+    }
+    return nil
+}
