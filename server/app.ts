@@ -5,7 +5,7 @@ import { ProfileSchema, RecordPatchSchema } from "../shared/schema";
 import { applyStatus, markStillRemoved, progress, todayISO } from "../shared/status";
 import type { BrokerRecord, Profile } from "../shared/types";
 import { loadBrokers } from "./brokers";
-import { createStore, DataCorruptError } from "./store";
+import { createStore, DataCorruptError, NothingToRestoreError } from "./store";
 
 class HttpError extends Error {
   constructor(
@@ -108,6 +108,8 @@ export function createApp(opts: { dataDir: string; brokersPath: string; today?: 
     } else if (err instanceof ZodError) {
       const issue = err.issues[0];
       res.status(400).json({ code: "INVALID", message: `${issue.path.join(".") || "body"}: ${issue.message}` });
+    } else if (err instanceof NothingToRestoreError) {
+      res.status(409).json({ code: "NOTHING_TO_RESTORE", message: err.message });
     } else if (err instanceof DataCorruptError) {
       res.status(409).json({ code: "DATA_CORRUPT", message: err.message });
     } else {

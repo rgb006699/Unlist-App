@@ -74,3 +74,19 @@ test("the banner clears once a later request succeeds", async () => {
   await screen.findByRole("heading", { name: "Your details" });
   expect(screen.queryByText(/Can't reach Unlist server/)).not.toBeInTheDocument();
 });
+
+test("restore with nothing to restore just reloads and clears the banner", async () => {
+  let corrupt = true;
+  mockApi({
+    "GET /api/profile": () => (corrupt ? { status: 409, body: { code: "DATA_CORRUPT", message: "bad" } } : { body: profile }),
+    "GET /api/brokers": () => (corrupt ? { status: 409, body: { code: "DATA_CORRUPT", message: "bad" } } : { body: brokers }),
+    "POST /api/data/restore": () => {
+      corrupt = false; // fixed by hand in the meantime
+      return { status: 409, body: { code: "NOTHING_TO_RESTORE", message: "nothing to restore" } };
+    },
+  });
+  renderApp();
+  await userEvent.click(await screen.findByRole("button", { name: "Restore from backup" }));
+  await screen.findByText("Your removals");
+  expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});

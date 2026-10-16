@@ -10,6 +10,13 @@ export class DataCorruptError extends Error {
   }
 }
 
+export class NothingToRestoreError extends Error {
+  constructor() {
+    super("data.json is readable, so there is nothing to restore");
+    this.name = "NothingToRestoreError";
+  }
+}
+
 const isMissing = (e: unknown) => (e as NodeJS.ErrnoException).code === "ENOENT";
 
 const exists = (path: string) =>
@@ -81,6 +88,19 @@ export function createStore(dir: string) {
 
     restore: () =>
       enqueue(async () => {
+        // Only a missing or unreadable file may be replaced by the backup.
+        const current = await readFile(file, "utf8").catch((e) => {
+          if (isMissing(e)) return null;
+          throw e;
+        });
+        if (current !== null) {
+          try {
+            parse(current, "data.json");
+            throw new NothingToRestoreError();
+          } catch (e) {
+            if (!(e instanceof DataCorruptError)) throw e;
+          }
+        }
         let text: string;
         try {
           text = await readFile(bak, "utf8");

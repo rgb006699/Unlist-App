@@ -37,7 +37,13 @@ export default function App() {
       setError(null);
       setReloadKey((k) => k + 1);
     } catch (e) {
-      report(e);
+      if (e instanceof ApiError && e.code === "NOTHING_TO_RESTORE") {
+        // The file is readable again (e.g. fixed by hand): just reload it.
+        setError(null);
+        setReloadKey((k) => k + 1);
+      } else {
+        report(e);
+      }
     }
   };
 

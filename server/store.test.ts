@@ -1,7 +1,7 @@
 import { mkdtemp, readFile, writeFile, readdir, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createStore, DataCorruptError } from "./store";
+import { createStore, DataCorruptError, NothingToRestoreError } from "./store";
 import { emptyDataFile } from "../shared/schema";
 
 let dir: string;
@@ -93,4 +93,13 @@ test("a missing data.json with a backup present is reported, not reseeded", asyn
   await expect(store.load()).rejects.toBeInstanceOf(DataCorruptError);
   expect((await read("data.json.bak")).profile.fullName).toBe("Keep");
   expect((await store.restore()).profile.fullName).toBe("Keep");
+});
+
+test("restore refuses when data.json is readable", async () => {
+  const store = createStore(dir);
+  await store.update((d) => ({ ...d, profile: { ...d.profile, fullName: "First" } }));
+  await store.update((d) => ({ ...d, profile: { ...d.profile, fullName: "Second" } }));
+  await expect(store.restore()).rejects.toBeInstanceOf(NothingToRestoreError);
+  expect((await store.load()).profile.fullName).toBe("Second");
+  expect((await readdir(dir)).filter((f) => f.startsWith("data.json.corrupt-"))).toHaveLength(0);
 });

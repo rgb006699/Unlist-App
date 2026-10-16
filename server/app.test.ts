@@ -158,3 +158,12 @@ test("localhost Host is accepted", async () => {
   const res = await request(app).get("/api/profile").set("Host", "localhost:5173");
   expect(res.status).toBe(200);
 });
+
+test("restore on healthy data is refused with 409 NOTHING_TO_RESTORE", async () => {
+  await request(app).patch("/api/brokers/alpha").send({ status: "found" });
+  await request(app).patch("/api/brokers/beta").send({ status: "found" });
+  const res = await request(app).post("/api/data/restore").send({});
+  expect(res.status).toBe(409);
+  expect(res.body.code).toBe("NOTHING_TO_RESTORE");
+  expect((await dataOnDisk()).records.beta).toBeDefined();
+});
