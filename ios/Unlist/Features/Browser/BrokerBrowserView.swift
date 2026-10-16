@@ -46,6 +46,7 @@ struct BrokerBrowserView: View {
                 if state.isLoading { ProgressView().progressViewStyle(.linear).tint(.accentColor) }
             }
             .safeAreaInset(edge: .bottom) { bottomBar }
+            .onAppear { state.start() }
             .navigationTitle(state.host)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -99,6 +100,7 @@ struct BrokerBrowserView: View {
                 DetailsBar(profile: model.profile)
             } else {
                 VStack(spacing: 8) {
+                    markMenu
                     Text("Add your details in Profile first, so Unlist can fill them in for you.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)

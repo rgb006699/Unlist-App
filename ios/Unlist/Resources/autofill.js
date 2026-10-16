@@ -48,6 +48,14 @@ window.unlistFill = function (payload) {
     var style = window.getComputedStyle(el);
     if (style.display === "none" || style.visibility === "hidden") return false;
     if (el.getClientRects().length === 0) return false;
+    // Anti-bot "honeypot" fields are hidden from people in other ways;
+    // filling one can make the site silently reject the request.
+    if (parseFloat(style.opacity) === 0) return false;
+    if (el.closest && el.closest("[aria-hidden=true]")) return false;
+    if (el.getAttribute("tabindex") === "-1") return false;
+    var r = el.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return false;
+    if (r.right + window.scrollX <= 0 || r.bottom + window.scrollY <= 0) return false;
     return true;
   }
 
@@ -134,6 +142,8 @@ window.unlistFill = function (payload) {
       else if (KEYWORDS[KEYWORDS.length - 1][1].test(words)) field = "fullName";
     }
     if (!field || bySelector[field]) return;
+    // Address line 2 / apartment fields stay empty.
+    if (field === "street" && /\b(2|apt|apartment|suite|unit)\b/.test(describe(el))) return;
     if (field === "fullName" && hasSplitName) return;
     fill(el, field);
   });

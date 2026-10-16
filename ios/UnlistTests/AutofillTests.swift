@@ -60,9 +60,7 @@ private final class TestPage: NSObject, WKNavigationDelegate {
 
     @discardableResult
     func fill(selectors: [AutofillField: String]? = nil) async throws -> Int {
-        let result = try await web.evaluateJavaScript(
-            AutofillScript.source + "\n;unlistFill(\(autofillPayload(Fixtures.profile, selectors: selectors))).filled")
-        return (result as? NSNumber)?.intValue ?? -1
+        await AutofillRunner.fill(web, payload: autofillPayload(Fixtures.profile, selectors: selectors))
     }
 
     func value(_ selector: String) async throws -> String {
@@ -184,6 +182,48 @@ private final class TestPage: NSObject, WKNavigationDelegate {
         #expect(try await page.fill() == 1)
         #expect(try await page.value("#h1") == "")
         #expect(try await page.value("#v") == "Doe")
+    }
+
+    @Test func pageScriptsCantReadTheFillValues() async throws {
+        let page = TestPage()
+        await page.load(#"""
+        <input id="em" name="email">
+        <script>
+          window.leaked = 0;
+          Object.defineProperty(window, "unlistFill", { set(fn) { window.leaked++; }, get() { return undefined; } });
+          const desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+          Object.defineProperty(HTMLInputElement.prototype, "value", {
+            set(v) { window.leaked++; desc.set.call(this, v); }, get() { return desc.get.call(this); }
+          });
+        </script>
+        """#)
+        #expect(try await page.fill() == 1)
+        #expect(try await page.value("#em") == "jane@example.com")
+        #expect(try await page.number("window.leaked") == 0)
+    }
+
+    @Test func honeypotFieldsAreSkipped() async throws {
+        let page = TestPage()
+        await page.load(#"""
+        <input id="a" name="email" style="opacity:0">
+        <input id="b" name="email" style="position:absolute;left:-9999px">
+        <input id="c" name="email" aria-hidden="true">
+        <input id="d" name="email" tabindex="-1">
+        <input id="e" name="email" style="width:0;height:0;border:0;padding:0">
+        <input id="ok" name="email">
+        """#)
+        #expect(try await page.fill() == 1)
+        #expect(try await page.value("#ok") == "jane@example.com")
+        #expect(try await page.value("#a") == "")
+    }
+
+    @Test func addressLineTwoIsLeftEmpty() async throws {
+        let page = TestPage()
+        await page.load(#"<label for="a1">Address line 1</label><input id="a1"><label for="a2">Address line 2</label><input id="a2"><input id="a3" name="address_2">"#)
+        #expect(try await page.fill() == 1)
+        #expect(try await page.value("#a1") == "22 New St")
+        #expect(try await page.value("#a2") == "")
+        #expect(try await page.value("#a3") == "")
     }
 
     @Test func perBrokerSelectorWins() async throws {

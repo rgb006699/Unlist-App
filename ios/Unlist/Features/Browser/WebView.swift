@@ -2,6 +2,25 @@ import Observation
 import SwiftUI
 import WebKit
 
+enum NavigationDecision: Equatable { case allow, handOff, cancel }
+
+/// Web pages load; mail/phone links open the system app only when tapped;
+/// anything else (app-store and app links, intents) is quietly dropped.
+func navigationDecision(for url: URL, userInitiated: Bool) -> NavigationDecision {
+    switch url.scheme?.lowercased() ?? "" {
+    case "http", "https", "about", "blob", "data": .allow
+    case "mailto", "tel", "sms": userInitiated ? .handOff : .cancel
+    default: .cancel
+    }
+}
+
+/// Load "errors" that just mean a navigation was cancelled or handed off.
+func isIgnorableLoadError(_ error: Error) -> Bool {
+    let e = error as NSError
+    if e.domain == NSURLErrorDomain && e.code == NSURLErrorCancelled { return true }
+    return e.domain == "WebKitErrorDomain" && (e.code == 101 || e.code == 102)
+}
+
 /// A broker page in a private web view (nothing is kept between visits).
 @MainActor
 @Observable
@@ -12,7 +31,15 @@ final class BrowserState: NSObject, WKNavigationDelegate, WKUIDelegate {
     private(set) var errorText: String?
     private(set) var currentURL: URL?
 
+    private let startURL: URL
+    private var started = false
+
+    /// Nothing loads until `start()`, so throwaway copies SwiftUI makes while
+    /// re-rendering never contact the site.
     init(url: URL) {
+        startURL = url
+        currentURL = url
+        host = url.host() ?? ""
         let config = WKWebViewConfiguration()
         config.websiteDataStore = .nonPersistent()
         webView = WKWebView(frame: .zero, configuration: config)
@@ -20,7 +47,12 @@ final class BrowserState: NSObject, WKNavigationDelegate, WKUIDelegate {
         webView.navigationDelegate = self
         webView.uiDelegate = self
         webView.allowsBackForwardNavigationGestures = true
-        load(url)
+    }
+
+    func start() {
+        guard !started else { return }
+        started = true
+        load(startURL)
     }
 
     func load(_ url: URL) {
@@ -36,20 +68,20 @@ final class BrowserState: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     /// Runs the fill script on the current page; returns how many fields it filled.
     func fill(payload: String) async -> Int {
-        let js = AutofillScript.source + "\n;unlistFill(\(payload)).filled"
-        let result = try? await webView.evaluateJavaScript(js)
-        return (result as? NSNumber)?.intValue ?? 0
+        await AutofillRunner.fill(webView, payload: payload)
     }
 
     // MARK: WKNavigationDelegate
 
     func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction) async -> WKNavigationActionPolicy {
-        guard let url = action.request.url, let scheme = url.scheme?.lowercased() else { return .allow }
-        if ["mailto", "tel", "sms"].contains(scheme) {
+        guard let url = action.request.url else { return .allow }
+        switch navigationDecision(for: url, userInitiated: action.navigationType == .linkActivated) {
+        case .allow: return .allow
+        case .handOff:
             await UIApplication.shared.open(url)
             return .cancel
+        case .cancel: return .cancel
         }
-        return .allow
     }
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
@@ -73,7 +105,7 @@ final class BrowserState: NSObject, WKNavigationDelegate, WKUIDelegate {
 
     private func failed(_ error: Error) {
         isLoading = false
-        if (error as NSError).code == NSURLErrorCancelled { return }
+        if isIgnorableLoadError(error) { return }
         errorText = error.localizedDescription
     }
 
