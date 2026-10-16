@@ -59,7 +59,8 @@ export default function BrokerDetail() {
 
   const dates = [
     record?.requestSentAt && `Request sent ${record.requestSentAt}`,
-    record?.removedAt && `Removed ${record.removedAt}`,
+    // An earlier removal stays in History; here it would read as current.
+    record?.status === "removed" && record.removedAt && `Removed ${record.removedAt}`,
     record?.recheckAt && `Recheck ${record.recheckAt}`,
   ].filter(Boolean) as string[];
 

@@ -133,3 +133,22 @@ test("unknown broker", async () => {
   await userEvent.click(screen.getByRole("link", { name: "Back to dashboard" }));
   expect(screen.getByText("dashboard")).toBeInTheDocument();
 });
+
+test("a broker moved back from removed no longer shows a Removed date", async () => {
+  const back = applyStatus(records.mylife, "found", TODAY, 90);
+  mockApi({
+    "GET /api/brokers": { body: brokersResponse({ ...records, mylife: back }) },
+    "GET /api/profile": { body: profile },
+  });
+  renderDetail("mylife");
+  await screen.findByRole("heading", { name: "MyLife" });
+  expect(screen.queryByText(/^Removed \d/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/^Recheck \d/)).not.toBeInTheDocument();
+});
+
+test("a removed broker shows its removed and recheck dates", async () => {
+  mockApi({ "GET /api/brokers": { body: brokersResponse() }, "GET /api/profile": { body: profile } });
+  renderDetail("mylife");
+  expect(await screen.findByText("Removed 2026-10-01")).toBeInTheDocument();
+  expect(screen.getByText("Recheck 2026-12-30")).toBeInTheDocument();
+});
