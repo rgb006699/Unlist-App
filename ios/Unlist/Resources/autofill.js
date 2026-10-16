@@ -133,8 +133,12 @@ window.unlistFill = function (payload) {
       if (type === "email") field = "email";
       else if (type === "tel") field = "phone";
     }
+    var text = describe(el);
+    // Fields that only look like ours: SSN digits, birth dates, company or
+    // user names. Leave them for the owner.
+    if (/\b(ssn|social security|last ?4|last four|birth|dob|company|organi[sz]ation|business|employer|user ?name|nickname)\b/.test(text)) return;
     if (!field) {
-      var words = describe(el);
+      var words = text;
       var matches = KEYWORDS.filter(function (k) { return k[0] !== "fullName" && k[1].test(words); });
       // "Name, phone or address" could be anything: leave it for the owner.
       if (matches.length > 1) return;
@@ -142,6 +146,8 @@ window.unlistFill = function (payload) {
       else if (KEYWORDS[KEYWORDS.length - 1][1].test(words)) field = "fullName";
     }
     if (!field || bySelector[field]) return;
+    // Free-text boxes ("state your reason") only ever take a street address.
+    if (el.tagName.toLowerCase() === "textarea" && field !== "street") return;
     // Address line 2 / apartment fields stay empty.
     if (field === "street" && /\b(2|apt|apartment|suite|unit)\b/.test(describe(el))) return;
     if (field === "fullName" && hasSplitName) return;

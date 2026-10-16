@@ -226,6 +226,25 @@ private final class TestPage: NSObject, WKNavigationDelegate {
         #expect(try await page.value("#a3") == "")
     }
 
+    @Test func lookalikeLabelsAreLeftEmpty() async throws {
+        let page = TestPage()
+        await page.load(#"""
+        <label for="ssn">Last 4 of SSN</label><input id="ssn">
+        <label for="why">Please state your reason</label><textarea id="why"></textarea>
+        <label for="co">Company name</label><input id="co">
+        <label for="un">Username</label><input id="un">
+        <label for="dob">Date of birth</label><input id="dob">
+        <label for="ln">Last name</label><input id="ln">
+        """#)
+        #expect(try await page.fill() == 1)
+        #expect(try await page.value("#ln") == "Doe")
+        #expect(try await page.value("#ssn") == "")
+        #expect(try await page.value("#why") == "")
+        #expect(try await page.value("#co") == "")
+        #expect(try await page.value("#un") == "")
+        #expect(try await page.value("#dob") == "")
+    }
+
     @Test func perBrokerSelectorWins() async throws {
         let page = TestPage()
         await page.load(#"<input id="weird-id"><input name="email">"#)
