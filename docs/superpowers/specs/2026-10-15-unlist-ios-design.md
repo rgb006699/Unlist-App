@@ -77,8 +77,8 @@ Dates stay ISO `YYYY-MM-DD` strings in **local** time, as in the web app.
 ## Data on the phone
 
 - File: `Application Support/Unlist/data.json`, backup `data.json.bak`,
-  temp `data.json.tmp`. Excluded from nothing special; it is included in the
-  user's normal encrypted device backup.
+  temp `data.json.tmp`. It is included in the user's normal
+  encrypted device backup.
 - File protection: `.completeUntilFirstUserAuthentication`.
 - Writes are atomic (write temp → copy current to `.bak` → replace).
 - Missing file with no backup → start empty. Missing file with a backup, or an
