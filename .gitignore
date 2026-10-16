@@ -3,3 +3,6 @@ dist/
 data/
 .DS_Store
 .superpowers/
+ios/Unlist.xcodeproj/
+ios/build/
+xcuserdata/
