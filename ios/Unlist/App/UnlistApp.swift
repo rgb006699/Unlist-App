@@ -1,8 +1,10 @@
 import SwiftUI
+import UserNotifications
 
 @main
 struct UnlistApp: App {
     @State private var model: AppModel
+    private let notifications = NotificationDelegate()
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
@@ -11,6 +13,9 @@ struct UnlistApp: App {
         let model = AppModel(store: .appDefault(), brokers: BrokerList.bundled(), scheduler: NotificationScheduler())
         model.load()
         _model = State(initialValue: model)
+
+        notifications.onOpenBroker = { id in model.openBrokerId = id }
+        UNUserNotificationCenter.current().delegate = notifications
     }
 
     var body: some Scene {
