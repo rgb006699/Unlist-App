@@ -27,7 +27,9 @@ struct RootView: View {
                 .tag(AppTab.profile)
             }
             .task {
-                if model.profile.fullName.trimmingCharacters(in: .whitespaces).isEmpty { tab = .profile }
+                if model.openBrokerId == nil, model.profile.fullName.trimmingCharacters(in: .whitespaces).isEmpty {
+                    tab = .profile
+                }
             }
             .confirmationDialog("You have unsaved changes to your details.",
                                 isPresented: Binding(get: { pendingTab != nil }, set: { if !$0 { pendingTab = nil } }),
@@ -42,7 +44,7 @@ struct RootView: View {
                 }
                 Button("Keep Editing", role: .cancel) { pendingTab = nil }
             }
-            .onChange(of: model.openBrokerId) { _, id in
+            .onChange(of: model.openBrokerId, initial: true) { _, id in
                 guard let id else { return }
                 tab = .dashboard
                 path = [id]

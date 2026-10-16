@@ -31,10 +31,17 @@ struct DataStore: Sendable {
     }
 
     private func parse(_ data: Data, _ name: String) throws -> DataFile {
-        guard let decoded = try? JSONDecoder().decode(DataFile.self, from: data), decoded.version == 1 else {
+        guard let decoded = try? JSONDecoder().decode(DataFile.self, from: data), decoded.version == 1,
+              decoded.settings.recheckDays > 0, decoded.records.values.allSatisfy(Self.datesAreValid) else {
             throw StoreError.corrupt("\(name) can't be read")
         }
         return decoded
+    }
+
+    /// Same date rules as the web schema: every date is a real YYYY-MM-DD.
+    private static func datesAreValid(_ r: BrokerRecord) -> Bool {
+        [r.requestSentAt, r.removedAt, r.recheckAt].allSatisfy { $0.map(isISODate) ?? true }
+            && r.history.allSatisfy { isISODate($0.at) }
     }
 
     private func encode(_ data: DataFile) throws -> Data {
@@ -55,22 +62,32 @@ struct DataStore: Sendable {
 
     func load() throws -> DataFile {
         try ensureDirectory()
-        guard let bytes = try? Data(contentsOf: file) else {
-            // Seeding here would let the next save overwrite the only good backup.
-            if fm.fileExists(atPath: backup.path) { throw StoreError.corrupt("data.json is missing but a backup exists") }
-            let fresh = DataFile.empty()
-            try save(fresh)
-            return fresh
+        if fm.fileExists(atPath: file.path) {
+            // Exists but can't be read (e.g. the phone hasn't been unlocked since
+            // a restart): report it, never replace it with an empty file.
+            guard let bytes = try? Data(contentsOf: file) else { throw StoreError.corrupt("data.json can't be read right now") }
+            return try parse(bytes, "data.json")
         }
-        return try parse(bytes, "data.json")
+        // Seeding here would let the next save overwrite the only good backup.
+        if fm.fileExists(atPath: backup.path) { throw StoreError.corrupt("data.json is missing but a backup exists") }
+        let fresh = DataFile.empty()
+        try save(fresh)
+        return fresh
     }
 
     func save(_ data: DataFile) throws {
         try ensureDirectory()
         let bytes = try encode(data)
         if fm.fileExists(atPath: file.path) {
-            if fm.fileExists(atPath: backup.path) { try fm.removeItem(at: backup) }
-            try fm.copyItem(at: file, to: backup)
+            // Copy, then swap in, so a failed copy never leaves us without a backup.
+            let backupTemp = directory.appendingPathComponent("data.json.bak.tmp")
+            if fm.fileExists(atPath: backupTemp.path) { try fm.removeItem(at: backupTemp) }
+            try fm.copyItem(at: file, to: backupTemp)
+            if fm.fileExists(atPath: backup.path) {
+                _ = try fm.replaceItemAt(backup, withItemAt: backupTemp)
+            } else {
+                try fm.moveItem(at: backupTemp, to: backup)
+            }
         }
         try replaceFile(with: bytes)
     }

@@ -12,9 +12,29 @@ private func components(_ iso: String) -> DateComponents {
     return DateComponents(year: p[0], month: p[1], day: p[2])
 }
 
+/// A Gregorian calendar in the given calendar's time zone. Dates are always
+/// stored as Gregorian YYYY-MM-DD, whatever calendar the iPhone is set to.
+func gregorian(like calendar: Calendar = .current) -> Calendar {
+    var g = Calendar(identifier: .gregorian)
+    g.timeZone = calendar.timeZone
+    return g
+}
+
 /// Today's local date. Never derived from UTC.
 func todayISO(_ now: Date = .now, calendar: Calendar = .current) -> String {
-    iso(calendar.dateComponents([.year, .month, .day], from: now))
+    iso(gregorian(like: calendar).dateComponents([.year, .month, .day], from: now))
+}
+
+/// True for a real calendar date written as YYYY-MM-DD.
+func isISODate(_ s: String) -> Bool {
+    let p = s.split(separator: "-", omittingEmptySubsequences: false)
+    guard s.count == 10, p.count == 3, p[0].count == 4, p[1].count == 2, p[2].count == 2,
+          let y = Int(p[0]), let m = Int(p[1]), let d = Int(p[2]), (1...12).contains(m), d >= 1 else { return false }
+    var cal = Calendar(identifier: .gregorian)
+    cal.timeZone = TimeZone(identifier: "UTC")!
+    guard let date = cal.date(from: DateComponents(year: y, month: m, day: d)) else { return false }
+    let back = cal.dateComponents([.year, .month, .day], from: date)
+    return back.year == y && back.month == m && back.day == d
 }
 
 func addDays(_ date: String, _ days: Int) -> String {

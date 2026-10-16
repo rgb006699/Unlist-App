@@ -24,7 +24,7 @@ import Testing
             id: "recheck-spokeo", brokerId: "spokeo",
             title: "Time to recheck Spokeo",
             body: "Search again to make sure your listing hasn't come back.",
-            fireDate: DateComponents(year: 2027, month: 1, day: 13, hour: 9, minute: 0))])
+            fireDate: DateComponents(calendar: cal, year: 2027, month: 1, day: 13, hour: 9, minute: 0))])
     }
 
     @Test func recheckTodayIsScheduledOnlyBeforeNine() {
@@ -39,5 +39,21 @@ import Testing
         var recs = Fixtures.records
         recs["mylife"] = applyStatus(nil, .relisted, today: Fixtures.today, recheckDays: 90)
         #expect(reminders(for: rows(recs), now: at(2026, 10, 15, 12), calendar: cal).isEmpty)
+    }
+}
+
+@Suite struct ReminderCalendarTests {
+    @Test func buddhistDeviceCalendarStillSchedulesTheGregorianDate() throws {
+        var cal = Calendar(identifier: .buddhist)
+        cal.timeZone = TimeZone(identifier: "America/Chicago")!
+        var greg = Calendar(identifier: .gregorian)
+        greg.timeZone = cal.timeZone
+        let now = greg.date(from: DateComponents(year: 2026, month: 10, day: 15, hour: 12))!
+        let rec = applyStatus(nil, .removed, today: "2026-10-15", recheckDays: 90)
+        let row = mergeBrokers([Fixtures.brokers[0]], ["spokeo": rec], today: "2026-10-15")
+        let list = reminders(for: row, now: now, calendar: cal)
+        let fire = try #require(list.first?.fireDate)
+        #expect(fire.year == 2027 && fire.month == 1 && fire.day == 13 && fire.hour == 9)
+        #expect(fire.calendar?.identifier == .gregorian)
     }
 }

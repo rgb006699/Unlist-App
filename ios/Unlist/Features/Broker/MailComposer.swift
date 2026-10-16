@@ -6,6 +6,8 @@ struct MailComposer: UIViewControllerRepresentable {
     let recipient: String?
     let subject: String
     let body: String
+    /// Called when the composer closes (sent, saved or cancelled).
+    var onFinish: () -> Void = {}
 
     static var isAvailable: Bool { MFMailComposeViewController.canSendMail() }
 
@@ -20,12 +22,18 @@ struct MailComposer: UIViewControllerRepresentable {
 
     func updateUIViewController(_ vc: MFMailComposeViewController, context: Context) {}
 
-    func makeCoordinator() -> Coordinator { Coordinator() }
+    func makeCoordinator() -> Coordinator { Coordinator(onFinish: onFinish) }
 
-    final class Coordinator: NSObject, MFMailComposeViewControllerDelegate {
-        nonisolated func mailComposeController(_ controller: MFMailComposeViewController,
-                                               didFinishWith result: MFMailComposeResult, error: Error?) {
-            MainActor.assumeIsolated { controller.dismiss(animated: true) }
+    // MessageUI calls its delegate on the main thread.
+    @MainActor
+    final class Coordinator: NSObject, @preconcurrency MFMailComposeViewControllerDelegate {
+        let onFinish: () -> Void
+
+        init(onFinish: @escaping () -> Void) { self.onFinish = onFinish }
+
+        func mailComposeController(_ controller: MFMailComposeViewController,
+                                   didFinishWith result: MFMailComposeResult, error: Error?) {
+            onFinish()
         }
     }
 }

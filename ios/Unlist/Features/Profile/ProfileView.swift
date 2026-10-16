@@ -167,7 +167,7 @@ struct ProfileView: View {
                     .keyboardType(.numberPad)
             }
             Button("Remove address", systemImage: "trash", role: .destructive) {
-                model.profileDraft.addresses.remove(at: index)
+                if index < model.profileDraft.addresses.count { model.profileDraft.addresses.remove(at: index) }
             }
             .foregroundStyle(.red)
         } header: {

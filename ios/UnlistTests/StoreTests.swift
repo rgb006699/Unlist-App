@@ -83,3 +83,45 @@ import Testing
         #expect(try store.load().records["retired"] != nil)
     }
 }
+
+@Suite struct StoreValidationTests {
+    let dir = FileManager.default.temporaryDirectory.appendingPathComponent("unlist-valid-\(UUID().uuidString)")
+    var store: DataStore { DataStore(directory: dir) }
+
+    private func write(_ json: String) throws {
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        try Data(json.utf8).write(to: dir.appendingPathComponent("data.json"))
+    }
+
+    private let profile = #""profile":{"fullName":"","aliases":[],"addresses":[],"phones":[],"emails":[]}"#
+
+    @Test func badDateIsCorruptNotACrash() throws {
+        try write(#"{"version":1,\#(profile),"settings":{"recheckDays":90},"records":{"spokeo":{"status":"removed","listingUrl":"","notes":"","requestSentAt":null,"removedAt":"2026-10-01","recheckAt":"soon","history":[]}}}"#)
+        #expect(throws: StoreError.self) { try store.load() }
+    }
+
+    @Test func badHistoryDateIsCorrupt() throws {
+        try write(#"{"version":1,\#(profile),"settings":{"recheckDays":90},"records":{"spokeo":{"status":"found","listingUrl":"","notes":"","requestSentAt":null,"removedAt":null,"recheckAt":null,"history":[{"at":"2026-13-40","status":"found"}]}}}"#)
+        #expect(throws: StoreError.self) { try store.load() }
+    }
+
+    @Test func nonPositiveRecheckDaysIsCorrupt() throws {
+        try write(#"{"version":1,\#(profile),"settings":{"recheckDays":0},"records":{}}"#)
+        #expect(throws: StoreError.self) { try store.load() }
+    }
+
+    @Test func anUnreadableExistingFileIsNeverReplaced() throws {
+        // data.json exists but can't be read as a file (here: it's a folder).
+        try FileManager.default.createDirectory(at: dir.appendingPathComponent("data.json"), withIntermediateDirectories: true)
+        #expect(throws: StoreError.self) { try store.load() }
+        var isDir: ObjCBool = false
+        #expect(FileManager.default.fileExists(atPath: dir.appendingPathComponent("data.json").path, isDirectory: &isDir) && isDir.boolValue)
+    }
+}
+
+@Suite struct BrokerDateValidationTests {
+    @Test func brokerWithBadLastVerifiedIsSkipped() {
+        let json = #"[{"id":"x","name":"X","searchUrl":"https://x.com","optOutUrl":"https://x.com/o","method":"web_form","optOutEmail":null,"needsCaptcha":false,"needsEmailConfirm":false,"needsId":false,"relistRisk":"low","steps":["a"],"lastVerified":"soon"}]"#
+        #expect(BrokerList.load(from: Data(json.utf8)).isEmpty)
+    }
+}

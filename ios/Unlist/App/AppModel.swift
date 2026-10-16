@@ -151,8 +151,10 @@ final class AppModel {
         let scheduler = scheduler
         reminderSync = Task {
             await previous?.value
-            if !list.isEmpty, await !scheduler.requestPermissionIfNeeded() { return }
-            await scheduler.replaceAll(with: list)
+            // Without permission nothing new can be added, but stale reminders
+            // must still be removed (they'd fire if notifications come back on).
+            let allowed = list.isEmpty ? true : await scheduler.requestPermissionIfNeeded()
+            await scheduler.replaceAll(with: allowed ? list : [])
         }
     }
 }

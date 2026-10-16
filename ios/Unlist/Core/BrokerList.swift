@@ -27,6 +27,8 @@ enum BrokerList {
             switch entry.broker {
             case .failure(let error):
                 log("Skipping broker \(label): \(error.localizedDescription)")
+            case .success(let broker) where !broker.lastVerified.isEmpty && !isISODate(broker.lastVerified):
+                log("Skipping broker \(label): lastVerified must be YYYY-MM-DD or empty")
             case .success(let broker) where broker.method == .email && broker.optOutEmail == nil:
                 log("Skipping broker \(label): optOutEmail is required when method is email")
             case .success(let broker) where seen.contains(broker.id):

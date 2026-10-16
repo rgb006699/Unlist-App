@@ -21,11 +21,13 @@ protocol ReminderScheduler: Sendable {
 /// Uses the stored status (not "due"), so opening the app on the morning of a
 /// recheck day keeps that day's 9:00 reminder.
 func reminders(for rows: [BrokerRow], now: Date = .now, calendar: Calendar = .current) -> [Reminder] {
-    rows.compactMap { row in
-        guard let record = row.record, record.status == .removed, let recheck = record.recheckAt else { return nil }
+    let cal = gregorian(like: calendar)
+    return rows.compactMap { row in
+        guard let record = row.record, record.status == .removed, let recheck = record.recheckAt, isISODate(recheck) else { return nil }
         let p = recheck.split(separator: "-").compactMap { Int($0) }
-        let fire = DateComponents(year: p[0], month: p[1], day: p[2], hour: 9, minute: 0)
-        guard let fireDate = calendar.date(from: fire), fireDate > now else { return nil }
+        var fire = DateComponents(year: p[0], month: p[1], day: p[2], hour: 9, minute: 0)
+        fire.calendar = cal
+        guard let fireDate = cal.date(from: fire), fireDate > now else { return nil }
         return Reminder(
             id: "recheck-\(row.broker.id)",
             brokerId: row.broker.id,

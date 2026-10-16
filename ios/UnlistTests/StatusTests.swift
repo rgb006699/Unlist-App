@@ -91,3 +91,15 @@ private let T = "2026-10-15"
     #expect(progress([.removed, .due, .found, .requestSent, .relisted, .notChecked])
         == Progress(total: 6, removed: 1, pending: 3, due: 1, notChecked: 1))
 }
+
+@Suite struct NonGregorianCalendarTests {
+    @Test(arguments: [Calendar.Identifier.buddhist, .japanese, .islamicUmmAlQura])
+    func todayIsAlwaysAGregorianDate(_ id: Calendar.Identifier) {
+        var cal = Calendar(identifier: id)
+        cal.timeZone = TimeZone(identifier: "America/Chicago")!
+        var greg = Calendar(identifier: .gregorian)
+        greg.timeZone = cal.timeZone
+        let date = greg.date(from: DateComponents(year: 2026, month: 10, day: 15, hour: 23, minute: 30))!
+        #expect(todayISO(date, calendar: cal) == "2026-10-15")
+    }
+}

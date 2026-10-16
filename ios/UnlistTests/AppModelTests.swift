@@ -55,12 +55,17 @@ actor FakeScheduler: ReminderScheduler {
         #expect(await scheduler.scheduled.last == [])
     }
 
-    @Test func noPermissionMeansNothingScheduled() async {
-        await scheduler.setGranted(false)
+    @Test func revokedPermissionStillClearsStaleReminders() async {
         let model = makeModel()
         model.setStatus("spokeo", .removed)
+        model.setStatus("acxiom", .removed)
         await model.reminderSync?.value
-        #expect(await scheduler.scheduled.last?.isEmpty ?? true)
+        #expect(await scheduler.scheduled.last?.count == 2)
+        await scheduler.setGranted(false) // turned off in Settings
+        model.setStatus("spokeo", .found)
+        await model.reminderSync?.value
+        // Can't add new ones without permission, but spokeo's must not linger.
+        #expect(await !(scheduler.scheduled.last ?? []).contains { $0.brokerId == "spokeo" })
     }
 
     @Test func sameStatusTwiceAddsOneHistoryEntry() throws {

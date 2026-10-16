@@ -50,7 +50,8 @@ struct RequestSection: View {
             .labelStyle(.compact)
         }
         .sheet(isPresented: $showComposer) {
-            MailComposer(recipient: broker.optOutEmail, subject: filled.subject, body: filled.body)
+            MailComposer(recipient: broker.optOutEmail, subject: filled.subject, body: filled.body,
+                         onFinish: { showComposer = false })
                 .ignoresSafeArea()
         }
         .alert("Couldn't open Mail", isPresented: $mailUnavailable) {

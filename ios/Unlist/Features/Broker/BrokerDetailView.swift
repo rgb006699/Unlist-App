@@ -4,6 +4,7 @@ struct BrokerDetailView: View {
     let brokerId: String
 
     @Environment(AppModel.self) private var model
+    @Environment(\.scenePhase) private var scenePhase
     @State private var notes = ""
     @State private var listingUrl = ""
     @State private var remindersOff = false
@@ -125,9 +126,10 @@ struct BrokerDetailView: View {
             if old == .url { model.updateListingUrl(brokerId, listingUrl) }
             if old == .notes { model.updateNotes(brokerId, notes) }
         }
-        .onDisappear {
-            model.updateListingUrl(brokerId, listingUrl)
-            model.updateNotes(brokerId, notes)
+        .onDisappear { saveText() }
+        .onChange(of: scenePhase) { _, phase in
+            // Swiping the app away doesn't end editing, so save on the way out.
+            if phase != .active { saveText() }
         }
         .task(id: record?.status) {
             remindersOff = record?.status == .removed ? await NotificationScheduler.isDenied() : false
@@ -138,6 +140,11 @@ struct BrokerDetailView: View {
                 Button("Done") { focus = nil }
             }
         }
+    }
+
+    private func saveText() {
+        model.updateListingUrl(brokerId, listingUrl)
+        model.updateNotes(brokerId, notes)
     }
 
     private func statusBinding(_ record: BrokerRecord?) -> Binding<Status?> {
