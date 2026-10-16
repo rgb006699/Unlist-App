@@ -42,7 +42,7 @@ struct StatusPill: View {
     var body: some View {
         Label(status.label, systemImage: status.symbol)
             .font(.caption.weight(.semibold))
-            .labelStyle(.titleAndIcon)
+            .labelStyle(CompactLabelStyle(spacing: 4))
             .lineLimit(1)
             .padding(.horizontal, 9)
             .padding(.vertical, 4)
@@ -57,7 +57,25 @@ struct MethodLabel: View {
 
     var body: some View {
         Label(method.label, systemImage: method.symbol)
+            .labelStyle(.compact)
             .font(.subheadline)
             .foregroundStyle(.secondary)
     }
+}
+
+/// Icon and title side by side with a tight gap (list rows otherwise use a
+/// wide icon column).
+struct CompactLabelStyle: LabelStyle {
+    var spacing: CGFloat = 6
+
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: spacing) {
+            configuration.icon
+            configuration.title
+        }
+    }
+}
+
+extension LabelStyle where Self == CompactLabelStyle {
+    static var compact: CompactLabelStyle { CompactLabelStyle() }
 }

@@ -36,6 +36,7 @@ struct DashboardView: View {
                     }
                 } header: {
                     Label("Due for recheck", systemImage: "exclamationmark.triangle")
+                        .labelStyle(.compact)
                         .foregroundStyle(ViewStatus.due.color)
                 } footer: {
                     Text("Search these sites again to make sure your listing hasn't come back.")

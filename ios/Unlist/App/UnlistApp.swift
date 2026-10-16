@@ -2,11 +2,15 @@ import SwiftUI
 
 @main
 struct UnlistApp: App {
-    @State private var model = AppModel(store: .appDefault(), brokers: BrokerList.bundled(), scheduler: NotificationScheduler())
+    @State private var model: AppModel
     @Environment(\.scenePhase) private var scenePhase
 
     init() {
-        _model.wrappedValue.load()
+        // Load before handing the model to @State: reading `_model.wrappedValue`
+        // here would load a throwaway copy, not the one the views use.
+        let model = AppModel(store: .appDefault(), brokers: BrokerList.bundled(), scheduler: NotificationScheduler())
+        model.load()
+        _model = State(initialValue: model)
     }
 
     var body: some Scene {
