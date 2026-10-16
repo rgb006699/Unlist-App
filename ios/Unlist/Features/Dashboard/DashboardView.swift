@@ -63,6 +63,14 @@ struct DashboardView: View {
 private struct SummaryView: View {
     let counts: Progress
     @Binding var group: TileGroup?
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    /// Two tiles per row, one per row at accessibility text sizes so words don't break.
+    private var columns: [GridItem] {
+        typeSize.isAccessibilitySize
+            ? [GridItem(.flexible())]
+            : [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -70,7 +78,7 @@ private struct SummaryView: View {
                 + Text(" sites have removed you").foregroundStyle(.secondary))
                 .accessibilityElement(children: .combine)
             ProgressBar(counts: counts)
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
+            LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(TileGroup.allCases) { tile in
                     TileButton(tile: tile, count: tile.count(in: counts), selected: group == tile) {
                         withAnimation(.snappy) { group = group == tile ? nil : tile }
@@ -185,21 +193,22 @@ private struct DueRow: View {
                     }
                 }
             }
-            ViewThatFits {
-                HStack(spacing: 8) { buttons }
-                VStack(alignment: .leading, spacing: 8) { buttons }
+            Button(action: searchAgain) {
+                Label("Search again", systemImage: "safari").labelStyle(.compact).frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            HStack(spacing: 8) {
+                Button(action: stillRemoved) {
+                    Label("Still removed", systemImage: "checkmark.circle").labelStyle(.compact).frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                Button(action: relisted) {
+                    Text("Re-listed").frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
             }
         }
-        .padding(.vertical, 4)
-    }
-
-    @ViewBuilder private var buttons: some View {
-        Button("Search again", systemImage: "safari", action: searchAgain)
-            .buttonStyle(.bordered)
-        Button("Still removed", systemImage: "checkmark.circle", action: stillRemoved)
-            .buttonStyle(.borderedProminent)
-        Button("Re-listed", action: relisted)
-            .buttonStyle(.bordered)
+        .padding(.vertical, 8)
     }
 }
 

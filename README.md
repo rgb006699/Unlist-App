@@ -16,6 +16,11 @@ the local Unlist server (only reachable from this computer).
 For working on the code, `npm run dev` runs the Vite dev server with live
 reload at http://localhost:5173.
 
+## iPhone app
+
+A native iPhone version lives in [`ios/`](ios/README.md). It stores everything
+on the phone and adds recheck reminders as notifications.
+
 ## Where your data lives
 
 Your profile and progress are saved in `data/data.json` on this computer only
