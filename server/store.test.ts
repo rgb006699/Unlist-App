@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, writeFile, readdir } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, readdir, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createStore, DataCorruptError } from "./store";
@@ -72,4 +72,25 @@ test("a failed update does not block later ones", async () => {
   ).rejects.toThrow("boom");
   await store.update((d) => ({ ...d, profile: { ...d.profile, fullName: "After" } }));
   expect((await store.load()).profile.fullName).toBe("After");
+});
+
+test("restore keeps the corrupt file under a new name", async () => {
+  const store = createStore(dir);
+  await store.update((d) => d);
+  await store.update((d) => d);
+  await writeFile(join(dir, "data.json"), "{hand edit,}");
+  await store.restore();
+  const kept = (await readdir(dir)).filter((f) => f.startsWith("data.json.corrupt-"));
+  expect(kept).toHaveLength(1);
+  expect(await readFile(join(dir, kept[0]), "utf8")).toBe("{hand edit,}");
+});
+
+test("a missing data.json with a backup present is reported, not reseeded", async () => {
+  const store = createStore(dir);
+  await store.update((d) => ({ ...d, profile: { ...d.profile, fullName: "Keep" } }));
+  await store.update((d) => d);
+  await unlink(join(dir, "data.json"));
+  await expect(store.load()).rejects.toBeInstanceOf(DataCorruptError);
+  expect((await read("data.json.bak")).profile.fullName).toBe("Keep");
+  expect((await store.restore()).profile.fullName).toBe("Keep");
 });

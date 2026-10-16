@@ -16,7 +16,15 @@ Then open http://localhost:5173.
 
 Your profile and progress are saved in `data/data.json` on this computer only
 (with a `data/data.json.bak` backup). The `data/` folder is gitignored and is
-never committed or sent anywhere. The broker list is `brokers.json`.
+never committed or sent anywhere. The API only answers requests from this
+computer.
+
+If `data.json` can't be read, Unlist offers to restore `data.json.bak` (the
+version before your last change) and keeps the unreadable file as
+`data.json.corrupt-<time>`.
+
+The broker list is `brokers.json`. Opt-out pages change often, so check each
+one before relying on it. Restart `npm run dev` after editing it.
 
 Unlist never sends email for you: it copies a request or opens a draft in your
 mail app, and you press Send.

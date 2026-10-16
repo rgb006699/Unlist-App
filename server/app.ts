@@ -17,6 +17,8 @@ class HttpError extends Error {
   }
 }
 
+const LOCAL_HOSTS = new Set(["127.0.0.1", "localhost"]);
+
 type Handler = (req: Request, res: Response) => Promise<void>;
 const route = (fn: Handler) => (req: Request, res: Response, next: NextFunction) => fn(req, res).catch(next);
 
@@ -25,6 +27,20 @@ export function createApp(opts: { dataDir: string; brokersPath: string; today?: 
   const store = createStore(opts.dataDir);
   const brokers = loadBrokers(opts.brokersPath);
   const app = express();
+
+  // The API binds to 127.0.0.1, but a browser can still be pointed at it by
+  // another website (DNS rebinding, cross-site form posts). Only accept local
+  // Host names, and only JSON for writes, which a cross-site page can't send
+  // without a CORS preflight this server never approves.
+  app.use((req, res, next) => {
+    if (!LOCAL_HOSTS.has(req.hostname)) {
+      res.status(403).json({ code: "FORBIDDEN", message: "Unlist only accepts requests from this computer" });
+    } else if (req.method !== "GET" && !req.is("application/json")) {
+      res.status(415).json({ code: "INVALID", message: "Requests must be JSON" });
+    } else {
+      next();
+    }
+  });
   app.use(express.json());
 
   app.get(

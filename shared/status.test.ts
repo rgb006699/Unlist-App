@@ -120,3 +120,9 @@ describe("schemas", () => {
     expect(BrokerSchema.safeParse({ ...broker, optOutEmail: "p@x.com", lastVerified: "soon" }).success).toBe(false);
   });
 });
+
+test("leaving removed clears the recheck date", () => {
+  const removed = applyStatus(undefined, "removed", T, 90);
+  expect(applyStatus(removed, "found", T, 90).recheckAt).toBeNull();
+  expect(applyStatus(removed, "request_sent", T, 90).recheckAt).toBeNull();
+});

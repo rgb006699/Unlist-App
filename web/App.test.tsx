@@ -56,3 +56,21 @@ test("header shows the app name and navigation", async () => {
   expect(screen.getByRole("link", { name: "Dashboard" })).toBeInTheDocument();
   expect(screen.getByRole("link", { name: "Profile" })).toBeInTheDocument();
 });
+
+test("the banner clears once a later request succeeds", async () => {
+  let down = true;
+  const ok = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { "Content-Type": "application/json" } });
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string) => {
+      if (down) throw new TypeError("Failed to fetch");
+      return ok(url === "/api/profile" ? profile : brokers);
+    }),
+  );
+  renderApp();
+  expect(await screen.findByText(/Can't reach Unlist server/)).toBeInTheDocument();
+  down = false;
+  await userEvent.click(screen.getByRole("link", { name: "Profile" }));
+  await screen.findByRole("heading", { name: "Your details" });
+  expect(screen.queryByText(/Can't reach Unlist server/)).not.toBeInTheDocument();
+});

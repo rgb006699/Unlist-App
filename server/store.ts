@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { access, copyFile, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { DataFileSchema, emptyDataFile } from "../shared/schema";
 import type { DataFile } from "../shared/types";
@@ -11,6 +11,12 @@ export class DataCorruptError extends Error {
 }
 
 const isMissing = (e: unknown) => (e as NodeJS.ErrnoException).code === "ENOENT";
+
+const exists = (path: string) =>
+  access(path).then(
+    () => true,
+    () => false,
+  );
 
 function parse(text: string, file: string): DataFile {
   let json: unknown;
@@ -54,6 +60,8 @@ export function createStore(dir: string) {
       text = await readFile(file, "utf8");
     } catch (e) {
       if (!isMissing(e)) throw e;
+      // Seeding here would let the next save overwrite the only good backup.
+      if (await exists(bak)) throw new DataCorruptError("data.json is missing but a backup exists");
       const fresh = emptyDataFile();
       await write(fresh);
       return fresh;
@@ -81,6 +89,8 @@ export function createStore(dir: string) {
           throw e;
         }
         const data = parse(text, "data.json.bak");
+        // Keep the unreadable file so hand edits are never lost.
+        if (await exists(file)) await rename(file, join(dir, `data.json.corrupt-${Date.now()}`));
         await writeFile(tmp, text);
         await rename(tmp, file);
         return data;

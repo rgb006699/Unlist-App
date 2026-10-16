@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { api, ApiError } from "./api";
+import { api, ApiError, onApiSuccess } from "./api";
 import { ServerBanner } from "./components/ServerBanner";
 import { ReportErrorContext } from "./errors";
 import BrokerDetail from "./pages/BrokerDetail";
@@ -17,6 +17,8 @@ export default function App() {
   const report = useCallback((e: unknown) => {
     setError(e instanceof ApiError ? e : new ApiError("UNKNOWN", 0, String(e)));
   }, []);
+
+  useEffect(() => onApiSuccess(() => setError(null)), []);
 
   useEffect(() => {
     api

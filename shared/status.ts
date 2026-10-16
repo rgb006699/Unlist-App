@@ -33,7 +33,7 @@ export function applyStatus(
     next.removedAt = today;
     next.recheckAt = addDays(today, recheckDays);
   }
-  if (status === "relisted") next.recheckAt = null;
+  if (status !== "removed") next.recheckAt = null;
   return next;
 }
 

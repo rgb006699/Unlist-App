@@ -12,7 +12,7 @@ export function ServerBanner({ error, onRestore }: { error: ApiError | null; onR
   if (error.code === "DATA_CORRUPT") {
     return (
       <div className="banner" role="alert">
-        Your data file couldn't be read ({error.message}). It hasn't been changed.
+        Your data file couldn't be read ({error.message}). Restoring keeps a copy of the unreadable file next to it.
         <button type="button" onClick={onRestore}>
           Restore from backup
         </button>

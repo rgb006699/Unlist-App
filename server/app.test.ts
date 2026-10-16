@@ -128,7 +128,7 @@ test("corrupt data returns 409 and restore recovers", async () => {
   const res = await request(app).get("/api/brokers");
   expect(res.status).toBe(409);
   expect(res.body.code).toBe("DATA_CORRUPT");
-  const restore = await request(app).post("/api/data/restore");
+  const restore = await request(app).post("/api/data/restore").send({});
   expect(restore.status).toBe(200);
   expect(restore.body).toEqual({ ok: true });
   expect((await request(app).get("/api/brokers")).status).toBe(200);
@@ -137,6 +137,24 @@ test("corrupt data returns 409 and restore recovers", async () => {
 test("restore with no backup returns 409", async () => {
   await request(app).get("/api/profile");
   await writeFile(join(dir, "data", "data.json"), "{oops");
-  const res = await request(app).post("/api/data/restore");
+  const res = await request(app).post("/api/data/restore").send({});
   expect(res.status).toBe(409);
+});
+
+test("requests from a foreign Host are refused", async () => {
+  const res = await request(app).get("/api/profile").set("Host", "evil.example:3001");
+  expect(res.status).toBe(403);
+  expect(res.body.code).toBe("FORBIDDEN");
+});
+
+test("writes without a JSON content type are refused", async () => {
+  const restore = await request(app).post("/api/data/restore").set("Content-Type", "text/plain").send("x");
+  expect(restore.status).toBe(415);
+  const patch = await request(app).patch("/api/brokers/alpha").set("Content-Type", "text/plain").send('{"status":"found"}');
+  expect(patch.status).toBe(415);
+});
+
+test("localhost Host is accepted", async () => {
+  const res = await request(app).get("/api/profile").set("Host", "localhost:5173");
+  expect(res.status).toBe(200);
 });

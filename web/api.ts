@@ -19,6 +19,14 @@ export interface BrokersResponse {
   recheckDays: number;
 }
 
+const successListeners = new Set<() => void>();
+
+// Lets the app clear a stale error banner once the server answers again.
+export function onApiSuccess(fn: () => void): () => void {
+  successListeners.add(fn);
+  return () => successListeners.delete(fn);
+}
+
 async function request<T>(method: string, url: string, body?: unknown): Promise<T> {
   let res: Response;
   try {
@@ -36,6 +44,7 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
     const code = typeof json.code === "string" ? json.code : res.status >= 500 ? "UNREACHABLE" : "UNKNOWN";
     throw new ApiError(code, res.status, json.message ?? `Request failed (${res.status})`);
   }
+  successListeners.forEach((fn) => fn());
   return json as T;
 }
 
@@ -45,5 +54,5 @@ export const api = {
   getBrokers: () => request<BrokersResponse>("GET", "/api/brokers"),
   patchBroker: (id: string, patch: RecordPatch) =>
     request<BrokerRow>("PATCH", `/api/brokers/${encodeURIComponent(id)}`, patch),
-  restore: () => request<{ ok: true }>("POST", "/api/data/restore"),
+  restore: () => request<{ ok: true }>("POST", "/api/data/restore", {}),
 };
