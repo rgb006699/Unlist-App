@@ -90,3 +90,51 @@ test("restore with nothing to restore just reloads and clears the banner", async
   await screen.findByText("Your removals");
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 });
+
+describe("unsaved profile edits", () => {
+  const setup = async () => {
+    mockApi({
+      "GET /api/profile": { body: profile },
+      "GET /api/brokers": { body: brokers },
+      "PUT /api/profile": (init) => ({ body: JSON.parse(String(init?.body)) }),
+    });
+    renderApp("/profile");
+    const name = await screen.findByLabelText("Full name");
+    await userEvent.type(name, " Edited");
+    return name;
+  };
+
+  test("leaving asks first, and cancelling keeps the edits", async () => {
+    const confirm = vi.fn().mockReturnValue(false);
+    vi.stubGlobal("confirm", confirm);
+    const name = await setup();
+    await userEvent.click(screen.getByRole("link", { name: "Dashboard" }));
+    expect(confirm).toHaveBeenCalledWith("You have unsaved changes to your details. Leave without saving?");
+    expect(name).toHaveValue("Jane Edited");
+  });
+
+  test("confirming leaves the page", async () => {
+    vi.stubGlobal("confirm", vi.fn().mockReturnValue(true));
+    await setup();
+    await userEvent.click(screen.getByRole("link", { name: "Dashboard" }));
+    expect(await screen.findByText("Your removals")).toBeInTheDocument();
+  });
+
+  test("no prompt after saving", async () => {
+    const confirm = vi.fn();
+    vi.stubGlobal("confirm", confirm);
+    await setup();
+    await userEvent.click(screen.getByRole("button", { name: "Save" }));
+    await screen.findByText("Saved");
+    await userEvent.click(screen.getByRole("link", { name: "Dashboard" }));
+    expect(confirm).not.toHaveBeenCalled();
+    expect(await screen.findByText("Your removals")).toBeInTheDocument();
+  });
+
+  test("closing or reloading the tab is guarded while edits are unsaved", async () => {
+    await setup();
+    const event = new Event("beforeunload", { cancelable: true });
+    window.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+  });
+});

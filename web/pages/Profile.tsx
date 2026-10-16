@@ -3,6 +3,7 @@ import type { Address, Profile as ProfileT } from "../../shared/types";
 import { api, ApiError } from "../api";
 import { LoadFailed } from "../components/LoadFailed";
 import { useReportError } from "../errors";
+import { useUnsavedChanges } from "../unsaved";
 
 const newAddress = (): Address => ({ street: "", city: "", state: "TX", zip: "", current: false });
 
@@ -67,11 +68,16 @@ export default function Profile() {
   });
 
   const [failed, setFailed] = useState(false);
+  const [saved, setSaved] = useState<ProfileT | null>(null);
+  useUnsavedChanges(profile !== null && JSON.stringify(profile) !== JSON.stringify(saved));
 
   useEffect(() => {
     api
       .getProfile()
-      .then(setProfile)
+      .then((p) => {
+        setProfile(p);
+        setSaved(p);
+      })
       .catch((e) => {
         setFailed(true);
         report(e);
@@ -91,8 +97,9 @@ export default function Profile() {
     e.preventDefault();
     setState({ kind: "saving" });
     try {
-      const saved = await api.saveProfile(clean(profile));
-      setProfile(saved);
+      const result = await api.saveProfile(clean(profile));
+      setProfile(result);
+      setSaved(result);
       setState({ kind: "saved" });
     } catch (err) {
       if (err instanceof ApiError && (err.code === "UNREACHABLE" || err.code === "DATA_CORRUPT")) report(err);

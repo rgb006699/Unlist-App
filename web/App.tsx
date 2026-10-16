@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { api, ApiError, onApiSuccess } from "./api";
 import { ServerBanner } from "./components/ServerBanner";
@@ -6,6 +6,7 @@ import { ReportErrorContext } from "./errors";
 import BrokerDetail from "./pages/BrokerDetail";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import { UNSAVED_MESSAGE, UnsavedContext } from "./unsaved";
 import "./styles.css";
 
 export default function App() {
@@ -19,6 +20,25 @@ export default function App() {
   }, []);
 
   useEffect(() => onApiSuccess(() => setError(null)), []);
+
+  const dirty = useRef(false);
+  const setDirty = useCallback((d: boolean) => {
+    dirty.current = d;
+  }, []);
+
+  useEffect(() => {
+    const onUnload = (e: BeforeUnloadEvent) => {
+      if (!dirty.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onUnload);
+    return () => window.removeEventListener("beforeunload", onUnload);
+  }, []);
+
+  const guard = (e: MouseEvent) => {
+    if (dirty.current && !window.confirm(UNSAVED_MESSAGE)) e.preventDefault();
+  };
 
   useEffect(() => {
     api
@@ -49,23 +69,27 @@ export default function App() {
 
   return (
     <ReportErrorContext.Provider value={report}>
-      <header className="topbar">
-        <span className="brand">Unlist</span>
-        <nav>
-          <NavLink to="/" end>
-            Dashboard
-          </NavLink>
-          <NavLink to="/profile">Profile</NavLink>
-        </nav>
-      </header>
-      <ServerBanner error={error} onRestore={restore} />
-      <main key={reloadKey}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/broker/:id" element={<BrokerDetail />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
-      </main>
+      <UnsavedContext.Provider value={setDirty}>
+        <header className="topbar">
+          <span className="brand">Unlist</span>
+          <nav>
+            <NavLink to="/" end onClick={guard}>
+              Dashboard
+            </NavLink>
+            <NavLink to="/profile" onClick={guard}>
+              Profile
+            </NavLink>
+          </nav>
+        </header>
+        <ServerBanner error={error} onRestore={restore} />
+        <main key={reloadKey}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/broker/:id" element={<BrokerDetail />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+        </main>
+      </UnsavedContext.Provider>
     </ReportErrorContext.Provider>
   );
 }
