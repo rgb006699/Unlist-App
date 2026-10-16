@@ -13,7 +13,7 @@ func autofillValues(_ profile: Profile) -> [AutofillField: String] {
         .phone: profile.phones.map(trim).first { !$0.isEmpty } ?? "",
         .street: trim(address?.street ?? ""),
         .city: trim(address?.city ?? ""),
-        .state: trim(address?.state ?? "").uppercased(),
+        .state: stateCode(address?.state ?? ""),
         .zip: trim(address?.zip ?? ""),
     ]
     return all.filter { !$0.value.isEmpty }

@@ -11,7 +11,7 @@ struct SearchValues: Equatable, Sendable {
     var zip = ""
 
     init(profile: Profile) {
-        let words = profile.fullName.split(whereSeparator: \.isWhitespace).map(String.init)
+        let words = nameWords(profile.fullName)
         if let f = words.first { first = f }
         if words.count > 1 {
             last = words[words.count - 1]
@@ -19,7 +19,7 @@ struct SearchValues: Equatable, Sendable {
         }
         if let a = profile.addresses.first(where: \.current) ?? profile.addresses.first {
             city = a.city.trimmingCharacters(in: .whitespaces)
-            state = a.state.trimmingCharacters(in: .whitespaces).uppercased()
+            state = stateCode(a.state)
             stateName = stateNames[state] ?? ""
             zip = a.zip.trimmingCharacters(in: .whitespaces)
         }
@@ -81,12 +81,37 @@ func searchLink(for broker: Broker, profile: Profile) -> SearchLink {
         case "Slug": filled = slug(raw, keepCase: true)
         default: filled = raw.addingPercentEncoding(withAllowedCharacters: unreserved) ?? ""
         }
+        // A name with no Latin letters can't be written as a slug.
+        if filled.isEmpty, !raw.isEmpty, p.name != "middle", let word = missingWords[p.name], !missing.contains(word) {
+            missing.append(word)
+        }
         let token = "{" + p.name + (p.modifier.map { ":" + $0 } ?? "") + "}"
         out = out.replacingOccurrences(of: token, with: filled)
     }
     if !missing.isEmpty { return .fallback(page, missing: missing) }
     guard let url = URL(string: out) else { return .fallback(page, missing: []) }
     return .direct(url)
+}
+
+private let nameTitles: Set<String> = ["mr", "mrs", "ms", "miss", "mx", "dr", "prof"]
+private let nameSuffixes: Set<String> = ["jr", "sr", "ii", "iii", "iv", "v", "phd", "md", "esq"]
+
+/// The words of a full name without titles (Dr.) or suffixes (Jr., III).
+func nameWords(_ fullName: String) -> [String] {
+    var words = fullName.split(whereSeparator: { $0.isWhitespace || $0 == "," }).map(String.init)
+    func bare(_ w: String) -> String { w.lowercased().replacingOccurrences(of: ".", with: "") }
+    while let f = words.first, words.count > 1, nameTitles.contains(bare(f)) { words.removeFirst() }
+    while let l = words.last, words.count > 1, nameSuffixes.contains(bare(l)) { words.removeLast() }
+    return words
+}
+
+/// "TX", "tx", "Texas" or " new york " → the 2-letter code ("" stays "").
+func stateCode(_ raw: String) -> String {
+    let t = raw.trimmingCharacters(in: .whitespaces)
+    let upper = t.uppercased()
+    if stateNames[upper] != nil { return upper }
+    if let match = stateNames.first(where: { $0.value.caseInsensitiveCompare(t) == .orderedSame }) { return match.key }
+    return upper
 }
 
 let stateNames: [String: String] = [

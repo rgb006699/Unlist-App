@@ -14,5 +14,5 @@ else
 fi
 xcodebuild test -project Unlist.xcodeproj -scheme Unlist -derivedDataPath "$DATA" "$@" > "$LOG" 2>&1
 STATUS=$?
-grep -E "error:|✘|failed|recorded an issue|Test run with|TEST SUCCEEDED|TEST FAILED|BUILD FAILED" "$LOG" | grep -v "^\s*$" | head -40
+grep -E "error:|✘|failed|recorded an issue|Test run with|TEST SUCCEEDED|TEST FAILED|BUILD FAILED" "$LOG" | grep -v -e "^\s*$" -e "ProcessSuspension" | head -40
 exit $STATUS

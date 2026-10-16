@@ -71,6 +71,26 @@ import Testing
             == .fallback(URL(string: "https://site.example/search")!, missing: []))
     }
 
+    @Test func nameSuffixesAndTitlesAreIgnored() {
+        #expect(url("https://a.com/{first}-{last}", profile("John Smith Jr.")) == "https://a.com/John-Smith")
+        #expect(url("https://a.com/{first}-{last}", profile("John Smith, III")) == "https://a.com/John-Smith")
+        #expect(url("https://a.com/{first}-{last}", profile("Dr. Jane Doe Sr")) == "https://a.com/Jane-Doe")
+        #expect(SearchValues(profile: profile("Mary Ann Smith II")).middle == "Ann")
+    }
+
+    @Test func emptySlugCountsAsMissing() {
+        let link = searchLink(for: broker("https://a.com/{first:slug}-{last:slug}"), profile: profile("太郎 Smith"))
+        #expect(link == .fallback(URL(string: "https://site.example/search")!, missing: ["first name"]))
+    }
+
+    @Test func fullStateNamesAreUnderstood() {
+        let v = SearchValues(profile: profile("Jane Doe", state: "Texas"))
+        #expect(v.state == "TX")
+        #expect(v.stateName == "Texas")
+        #expect(SearchValues(profile: profile("Jane Doe", state: " new york ")).state == "NY")
+        #expect(autofillValues(profile("Jane Doe", state: "Texas"))[.state] == "TX")
+    }
+
     @Test func stateNamesCoverEveryState() {
         #expect(stateNames.count == 51)
         #expect(stateNames["TX"] == "Texas")
